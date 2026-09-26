@@ -1,6 +1,6 @@
 # FarmWiz Orchestrator
 
-![FarmWiz Commander preview](./farmwiz-command-preview.jpeg)
+<img src="./farmwiz-command-preview.jpeg" alt="FarmWiz Commander preview" width="520">
 
 Node.js service and browser Commander for the FarmWiz local control plane. The Pi hosts the web/API service, registry, and outbound integrations. The browser UI is served by the same service.
 
