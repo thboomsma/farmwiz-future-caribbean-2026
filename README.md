@@ -86,8 +86,6 @@ Before sharing this link broadly, confirm that the public dashboard contains tel
 
 The hosted demo has the private runtime configuration required for Gemini, the local ICM relay, and read-only ThingsBoard access. Those credentials are intentionally not included in this public repository. A local deployment can be configured with the variables documented in [docs/SETUP.md](./docs/SETUP.md).
 
-Future Caribbean Demo Video: [ADD FINAL VIDEO LINK]  
-Project Documentation / Data Room: [ADD FINAL DRIVE LINK]
 
 ## Documentation
 
