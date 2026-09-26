@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmWiz Control Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Your existing CSS remains the same */
+    :root {
+      --primary: #1b5e20;
+      --secondary: #43a047;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f8f9fa;
+      --dark: #17351c;
+      --gray: #58705c;
+      --surface: #ffffff;
+      --surface-soft: #f3faf3;
+      --card-shadow: 0 6px 16px rgba(20, 74, 31, 0.10);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #edf7ee;
+      color: #1d3321;
+      line-height: 1.6;
+      padding-bottom: 20px;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #0f4518, var(--primary), #2e7d32);
+      color: white;
+      padding: 1.2rem;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    .dashboard-section {
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      font-size: 1.4rem;
+      color: var(--dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title i {
+      margin-right: 10px;
+      color: var(--primary);
+    }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .sensor-card {
+      text-align: center;
+      padding: 20px;
+      cursor: default;
+    }
+    
+    .relay-card {
+      padding: 0;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    
+    .relay-card.active {
+      border-color: var(--secondary);
+    }
+    
+    .relay-header {
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #2e7d32, var(--primary));
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .relay-content {
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .value {
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    
+    .on { color: var(--secondary); }
+    .off { color: var(--danger); }
+    
+    .icon-wrapper {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 1.8rem;
+    }
+    
+    .sensor-card .icon-wrapper {
+      background: rgba(46, 125, 50, 0.12);
+      color: var(--primary);
+    }
+    
+    .editable {
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.7);
+      padding: 2px 4px;
+      transition: var(--transition);
+    }
+    
+    .editable:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    
+    .edit-form {
+      display: none;
+      margin-top: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .edit-form input {
+      padding: 8px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .edit-form button {
+      padding: 6px 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .edit-form button:hover {
+      background: #124e1b;
+    }
+    
+    .relay-scheduler {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+    }
+    
+    .schedule-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      padding: 20px;
+      transition: var(--transition);
+      position: relative;
+    }
+    
+    .schedule-card:hover {
+      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    }
+    
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .schedule-title {
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+    }
+    
+    .schedule-title i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .schedule-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    
+    .schedule-type-btn {
+      flex: 1;
+      padding: 8px;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    
+    .schedule-type-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .schedule-type-btn:hover:not(.active) {
+      background: #e9ecef;
+    }
+    
+    .time-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .time-input-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .time-input-group label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: var(--gray);
+    }
+    
+    .time-input-group input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    
+    .time-input-group input[type="number"] {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      width: 100%;
+    }
+    
+    .days-selector {
+      margin-bottom: 20px;
+    }
+    
+    .days-selector label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .day-checkbox {
+      display: none;
+    }
+    
+    .day-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 5px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .day-checkbox:checked + .day-label {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .set-schedule-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .set-schedule-btn:hover {
+      background: #124e1b;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-on {
+      background: var(--secondary);
+      box-shadow: 0 0 8px var(--secondary);
+    }
+    
+    .status-off {
+      background: var(--danger);
+    }
+    
+    .debug-panel {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      border-left: 4px solid var(--warning);
+    }
+    
+    .debug-toggle {
+      background: var(--warning);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    
+    .debug-content {
+      display: none;
+      font-family: monospace;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Timelapse Styles */
+    .timelapse-container {
+      width: 100%;
+      height: 60vh;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+      position: relative;
+      background: #000;
+    }
+    
+    .timelapse-slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #000;
+    }
+    
+    .timelapse-slide.active {
+      opacity: 1;
+    }
+    
+    .timelapse-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 15px;
+    }
+    
+    .timelapse-btn {
+      background: var(--primary);
+      border: none;
+      padding: 12px 25px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .timelapse-btn:hover {
+      background: #124e1b;
+      transform: translateY(-2px);
+    }
+    
+    .timelapse-btn i {
+      margin-right: 8px;
+    }
+    
+    .timelapse-speed-control {
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+    
+    .timelapse-speed-control label {
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+    
+    .timelapse-speed-control input {
+      width: 100px;
+    }
+    
+    .timelapse-info {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .image-counter {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .image-filename {
+      font-size: 1rem;
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .timelapse-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 1.5rem;
+      color: white;
+      z-index: 10;
+    }
+    
+    .timelapse-loading i {
+      animation: spin 1.5s linear infinite;
+    }
+    
+    .timelapse-error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.2);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 80%;
+      color: white;
+    }
+    
+    .timelapse-progress-container {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .timelapse-progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .timelapse-view-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* New styles for multiple schedules */
+    .schedules-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .schedule-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      border-left: 4px solid var(--primary);
+      position: relative;
+    }
+    
+    .schedule-item.interval {
+      border-left-color: var(--warning);
+    }
+    
+    .schedule-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .schedule-item-time {
+      font-weight: bold;
+      color: var(--dark);
+    }
+    
+    .schedule-item-days {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    
+    .day-pill {
+      background: var(--primary);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+    
+    .schedule-item-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .schedule-item-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: var(--transition);
+    }
+    
+    .schedule-item-btn:hover {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+    
+    .btn-edit {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-delete {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .add-schedule-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    
+    .no-schedules {
+      text-align: center;
+      color: var(--gray);
+      font-style: italic;
+      padding: 20px;
+    }
+    
+    .schedule-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge-interval {
+      background: var(--warning);
+      color: white;
+    }
+    
+    .badge-time {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .schedule-detail {
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    .network-banner {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px 20px;
+      align-items: center;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #ffffff, #e5f5e7);
+      border: 1px solid #b9dcbc;
+      border-left: 6px solid var(--primary);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .mode-badge, .node-state {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 92px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      color: white;
+      background: var(--gray);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .mode-badge.online, .node-state.live { background: var(--secondary); }
+    .mode-badge.offline { background: var(--warning); }
+    .mode-badge.connecting { background: var(--gray); }
+    .node-state.stale { background: var(--danger); }
+
+    .network-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: var(--gray);
+      font-size: 0.92rem;
+    }
+
+    .remote-node-card {
+      padding: 18px;
+      border-top: 4px solid var(--secondary);
+    }
+
+    .remote-node-card.stale { border-top-color: var(--danger); opacity: 0.82; }
+
+    .remote-node-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .remote-node-meta {
+      color: var(--gray);
+      font-size: 0.82rem;
+      overflow-wrap: anywhere;
+      margin-bottom: 14px;
+    }
+
+    .remote-node-values {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .remote-node-value {
+      padding: 9px 10px;
+      background: var(--surface-soft);
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .remote-node-value span {
+      display: block;
+      color: var(--gray);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    
+    @media (max-width: 768px) {
+      .card-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .relay-scheduler {
+        grid-template-columns: 1fr;
+      }
+      
+      .timelapse-container {
+        height: 40vh;
+      }
+      
+      .timelapse-controls, .timelapse-view-controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .timelapse-btn, .timelapse-speed-control {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      header {
+        font-size: 1.3rem;
+        padding: 1rem;
+      }
+      
+      .timelapse-container {
+        height: 35vh;
+      }
+      
+      .time-inputs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><i class="fas fa-seedling"></i> FarmWiz Control Hub</div>
+    <div id="current-time">Loading...</div>
+  </header>
+
+  <div class="container">
+    <section class="network-banner" aria-live="polite">
+      <span id="network-mode" class="mode-badge connecting">Connecting</span>
+      <div>
+        <strong id="network-summary">Starting network services...</strong>
+        <div class="network-details">
+          <span id="network-ip">IP: --</span>
+          <span id="network-channel">Channel: --</span>
+          <span id="network-cloud">Cloud: --</span>
+          <span id="network-nodes">Nodes: 0</span>
+          <span id="network-uptime">Uptime: --</span>
+          <span id="network-reset">Reset: --</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sensor Cards Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-sensor"></i> Environment Sensors</h2>
+      <div class="card-grid">
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-temperature-high"></i>
+          </div>
+          <h3>Temperature</h3>
+          <div id="temp" class="value">-- °C</div>
+        </div>
+        
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-tint"></i>
+          </div>
+          <h3>Humidity</h3>
+          <div id="hum" class="value">-- %</div>
+        </div>
+        
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-sun"></i>
+          </div>
+          <h3>Light Level</h3>
+          <div id="ldr" class="value">-- lx</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-tower-broadcast"></i> Remote Sensor Nodes</h2>
+      <div class="card-grid" id="remote-nodes-grid">
+        <div class="card remote-node-card">Waiting for offline ESP-NOW readings...</div>
+      </div>
+    </section>
+
+    <!-- Relay Controls Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-toggle-on"></i> Device Controls</h2>
+      <div class="card-grid">
+        <div class="card relay-card" id="relay-card-1" onclick="toggleRelay(1)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(1)" id="relay1-name">Sprinkler</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-1"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-shower"></i>
+            </div>
+            <div id="relay1" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-1">
+            <input type="text" id="edit-input-1" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(1)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-2" onclick="toggleRelay(2)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(2)" id="relay2-name">Light</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-2"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div id="relay2" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-2">
+            <input type="text" id="edit-input-2" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(2)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-3" onclick="toggleRelay(3)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(3)" id="relay3-name">Air Pump</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-3"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-wind"></i>
+            </div>
+            <div id="relay3" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-3">
+            <input type="text" id="edit-input-3" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(3)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-4" onclick="toggleRelay(4)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(4)" id="relay4-name">Irrigation Pump</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-4"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-water"></i>
+            </div>
+            <div id="relay4" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-4">
+            <input type="text" id="edit-input-4" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(4)">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scheduler Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-clock"></i> Device Schedules</h2>
+      <div class="relay-scheduler" id="schedules"></div>
+    </section>
+
+    <!-- Timelapse Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-film"></i> Plant Timelapse</h2>
+      <div style="width:100%; height:100%;">
+    <iframe id="espStreamIframe" src="http://192.168.100.237:3000/stream" style="width:100%; height:100%; border:none;"></iframe>
+</div>
+
+<script>
+self.onInit = function() {
+    var iframe = document.getElementById('espStreamIframe');
+    if (!iframe) return;
+    
+    // Refresh the iframe every 10 seconds to keep stream alive
+    var refreshInterval = setInterval(function() {
+        // Reload the iframe by re-setting the src
+        iframe.src = iframe.src;
+        console.log(" Refreshing stream...");
+    }, 10000);
+    
+    // Store interval for cleanup
+    self._refreshInterval = refreshInterval;
+};
+
+self.onDestroy = function() {
+    if (self._refreshInterval) {
+        clearInterval(self._refreshInterval);
+        self._refreshInterval = null;
+    }
+    var iframe = document.getElementById('espStreamIframe');
+    if (iframe) {
+        iframe.src = '';
+    }
+};
+</script>
+      <!--<div class="timelapse-info">
+        <div class="image-counter">Image <span id="current-index">0</span> of <span id="total-images">0</span></div>
+        <div class="image-filename" id="current-filename">Loading images...</div>
+        <div class="timelapse-progress-container">
+          <div class="timelapse-progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+      
+      <div class="timelapse-container" id="timelapse-container">
+        <div class="timelapse-loading" id="timelapse-loading">
+          <i class="fas fa-spinner"></i> Loading timelapse images...
+        </div>
+      </div>
+      
+      <div class="timelapse-controls">
+        <button class="timelapse-btn" id="play-pause">
+          <i class="fas fa-play"></i> Play
+        </button>
+        <button class="timelapse-btn" id="prev-btn">
+          <i class="fas fa-backward-step"></i> Previous
+        </button>
+        <button class="timelapse-btn" id="next-btn">
+          <i class="fas fa-forward-step"></i> Next
+        </button>
+        <div class="timelapse-speed-control">
+          <label for="speed-slider"><i class="fas fa-gauge-high"></i> Speed:</label>
+          <input type="range" id="speed-slider" min="1" max="10" value="5">
+          <span id="speed-value">2s</span>
+        </div>
+        <button class="timelapse-btn" id="fullscreen-btn">
+          <i class="fas fa-expand"></i> Fullscreen
+        </button>
+      </div>
+      
+      <div class="timelapse-view-controls">
+        <button class="timelapse-btn" id="view-gallery">
+          <i class="fas fa-grid"></i> View Gallery Page
+        </button>
+        <button class="timelapse-btn" id="refresh-btn">
+          <i class="fas fa-sync-alt"></i> Reload Images
+        </button>
+      </div>-->
+    </section>
+    
+    <!-- Debug Panel -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-bug"></i> Debug Panel</h2>
+      <div class="debug-panel">
+        <button class="debug-toggle" onclick="toggleDebug()">Toggle Debug Info</button>
+        <div class="debug-content" id="debug-content">
+          <div>Waiting for data...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Server configuration
+    const SERVER_BASE_URL = "http://192.168.100.82:9000";
+    
+    // Load custom relay names from localStorage or use defaults
+    const defaultRelayNames = ["Sprinkler", "Light", "Air Pump", "Irrigation Pump"];
+    const defaultIcons = ["fa-shower", "fa-lightbulb", "fa-wind", "fa-water"];
+    let relayNames = [];
+    
+    // Initialize relay names
+    for (let i = 1; i <= 4; i++) {
+      let savedName = localStorage.getItem(`relay${i}-name`);
+      if (i === 4 && (savedName === "Mirror" || savedName === "Water Valve")) {
+        savedName = "Irrigation Pump";
+        localStorage.setItem(`relay${i}-name`, savedName);
+      }
+      relayNames[i-1] = savedName || defaultRelayNames[i-1];
+      document.getElementById(`relay${i}-name`).textContent = relayNames[i-1];
+    }
+
+    // Update current time
+    function updateCurrentTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      document.getElementById('current-time').textContent = now.toLocaleDateString('en-US', options);
+    }
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+
+    // Build schedule forms with interval support
+    for(let r=1;r<=4;r++){
+      const div = document.createElement("div");
+      div.className="schedule-card";
+      div.innerHTML = `
+        <div class="schedule-header">
+          <div class="schedule-title"><i class="fas ${defaultIcons[r-1]}"></i> <span id="schedule-relay${r}-name">${relayNames[r-1]}</span></div>
+          <div class="status-indicator status-off" id="schedule-status-${r}"></div>
+        </div>
+        
+        <div class="schedule-type-selector">
+          <button class="schedule-type-btn active" data-relay="${r}" data-type="time" onclick="switchScheduleType(${r}, 'time')">
+            <i class="fas fa-clock"></i> Time Range
+          </button>
+          <button class="schedule-type-btn" data-relay="${r}" data-type="interval" onclick="switchScheduleType(${r}, 'interval')">
+            <i class="fas fa-repeat"></i> Interval
+          </button>
+        </div>
+        
+        <div class="schedules-container" id="schedules-container-${r}">
+          <div class="no-schedules">No schedules set</div>
+        </div>
+        
+        <!-- Time Range Inputs -->
+        <div id="time-range-inputs-${r}" class="schedule-inputs">
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>Start Time</label>
+              <input type="time" id="start${r}">
+            </div>
+            <div class="time-input-group">
+              <label>End Time</label>
+              <input type="time" id="end${r}">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Interval Inputs -->
+        <div id="interval-inputs-${r}" class="schedule-inputs" style="display:none;">
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>ON Minutes</label>
+              <input type="number" id="onMinutes${r}" min="1" max="1440" value="15">
+            </div>
+            <div class="time-input-group">
+              <label>OFF Minutes</label>
+              <input type="number" id="offMinutes${r}" min="1" max="1440" value="45">
+            </div>
+          </div>
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>Start Window (optional)</label>
+              <input type="time" id="intervalStart${r}">
+            </div>
+            <div class="time-input-group">
+              <label>End Window (optional)</label>
+              <input type="time" id="intervalEnd${r}">
+            </div>
+          </div>
+          <div style="font-size:0.85rem; color:var(--gray); margin-bottom:10px;">
+            <i class="fas fa-info-circle"></i> Leave window empty for 24/7 operation
+          </div>
+        </div>
+        
+        <div class="days-selector">
+          <label>Active Days</label>
+          <div class="days-grid">
+            <input type="checkbox" id="day${r}_0" class="day-checkbox">
+            <label for="day${r}_0" class="day-label">S</label>
+            
+            <input type="checkbox" id="day${r}_1" class="day-checkbox">
+            <label for="day${r}_1" class="day-label">M</label>
+            
+            <input type="checkbox" id="day${r}_2" class="day-checkbox">
+            <label for="day${r}_2" class="day-label">T</label>
+            
+            <input type="checkbox" id="day${r}_3" class="day-checkbox">
+            <label for="day${r}_3" class="day-label">W</label>
+            
+            <input type="checkbox" id="day${r}_4" class="day-checkbox">
+            <label for="day${r}_4" class="day-label">T</label>
+            
+            <input type="checkbox" id="day${r}_5" class="day-checkbox">
+            <label for="day${r}_5" class="day-label">F</label>
+            
+            <input type="checkbox" id="day${r}_6" class="day-checkbox">
+            <label for="day${r}_6" class="day-label">S</label>
+          </div>
+        </div>
+        <div class="time-input-group">
+          <label>
+            <input type="checkbox" id="enabled${r}" checked> Enabled
+          </label>
+        </div>
+        <button class="set-schedule-btn" onclick="addSchedule(${r})">Add Schedule</button>
+      `;
+      document.getElementById("schedules").appendChild(div);
+    }
+
+    // Track current schedule type for each relay
+    let scheduleTypes = {1: 'time', 2: 'time', 3: 'time', 4: 'time'};
+
+    function switchScheduleType(relayNum, type) {
+      scheduleTypes[relayNum] = type;
+      
+      // Update button styles
+      const buttons = document.querySelectorAll(`.schedule-type-btn[data-relay="${relayNum}"]`);
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+      });
+      
+      // Show/hide inputs
+      document.getElementById(`time-range-inputs-${relayNum}`).style.display = type === 'time' ? 'block' : 'none';
+      document.getElementById(`interval-inputs-${relayNum}`).style.display = type === 'interval' ? 'block' : 'none';
+    }
+
+    // Debug functions
+    function toggleDebug() {
+      const debugContent = document.getElementById('debug-content');
+      debugContent.style.display = debugContent.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function updateDebugInfo(data) {
+      const debugContent = document.getElementById('debug-content');
+      const now = new Date().toLocaleTimeString();
+      debugContent.innerHTML = `
+        <div><strong>Last update:</strong> ${now}</div>
+        <div><strong>Raw JSON:</strong> ${JSON.stringify(data)}</div>
+        <div><strong>Soil Moisture Value:</strong> ${data.soilMoisture !== undefined ? data.soilMoisture : 'MISSING'}</div>
+        <div><strong>Temperature:</strong> ${data.temp}</div>
+        <div><strong>Humidity:</strong> ${data.hum}</div>
+        <div><strong>Light:</strong> ${data.ldr}</div>
+      `;
+    }
+
+    // Function to start editing a relay name
+    function startEdit(relayNum) {
+      // Hide all other edit forms first
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`edit-form-${i}`).style.display = 'none';
+      }
+      
+      const form = document.getElementById(`edit-form-${relayNum}`);
+      const input = document.getElementById(`edit-input-${relayNum}`);
+      const currentName = document.getElementById(`relay${relayNum}-name`).textContent;
+      
+      input.value = currentName;
+      form.style.display = 'block';
+      input.focus();
+    }
+
+    // Function to save edited relay name
+    function saveEdit(relayNum) {
+      const input = document.getElementById(`edit-input-${relayNum}`);
+      const newName = input.value.trim();
+      
+      if (newName) {
+        // Update the relay name
+        document.getElementById(`relay${relayNum}-name`).textContent = newName;
+        document.getElementById(`schedule-relay${relayNum}-name`).textContent = newName;
+        
+        // Save to localStorage
+        localStorage.setItem(`relay${relayNum}-name`, newName);
+        
+        // Update the relayNames array
+        relayNames[relayNum-1] = newName;
+      }
+      
+      // Hide the edit form
+      document.getElementById(`edit-form-${relayNum}`).style.display = 'none';
+    }
+
+    // Close edit forms when clicking outside
+    document.addEventListener('click', function(e) {
+      for (let i = 1; i <= 4; i++) {
+        const form = document.getElementById(`edit-form-${i}`);
+        if (form.style.display === 'block' && 
+            !form.contains(e.target) && 
+            e.target.id !== `relay${i}-name`) {
+          form.style.display = 'none';
+        }
+      }
+    });
+
+    // Allow pressing Enter to save
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`edit-input-${i}`).addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          saveEdit(i);
+        }
+      });
+    }
+
+    function formatUptime(milliseconds) {
+      const seconds = Math.floor((milliseconds || 0) / 1000);
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${days ? `${days}d ` : ''}${hours}h ${minutes}m`;
+    }
+
+    function updateNetworkStatus(data) {
+      const network = data.network || {};
+      const mode = network.mode || 'connecting';
+      const badge = document.getElementById('network-mode');
+      badge.textContent = mode;
+      badge.className = `mode-badge ${mode}`;
+
+      let summary = 'Connecting to infrastructure Wi-Fi...';
+      if (mode === 'online') {
+        summary = network.mqttConnected
+          ? 'Infrastructure Wi-Fi and ThingsBoard are online'
+          : 'Infrastructure Wi-Fi is online; ThingsBoard is retrying';
+      } else if (mode === 'offline') {
+        summary = 'Offline AP and fixed-channel ESP-NOW receiver are active';
+      }
+      document.getElementById('network-summary').textContent = summary;
+      document.getElementById('network-ip').textContent = `IP: ${network.ip || '--'}`;
+      document.getElementById('network-channel').textContent = `Channel: ${network.channel ?? '--'}`;
+      document.getElementById('network-cloud').textContent = `Cloud: ${network.mqttConnected ? 'connected' : 'disconnected'}`;
+      document.getElementById('network-nodes').textContent = `Nodes: ${network.nodeCount || 0}`;
+      document.getElementById('network-uptime').textContent = `Uptime: ${formatUptime(data.uptimeMs)}`;
+      document.getElementById('network-reset').textContent = `Reset: ${data.resetReason || '--'}`;
+    }
+
+    function renderRemoteNodes(nodes) {
+      const grid = document.getElementById('remote-nodes-grid');
+      grid.replaceChildren();
+
+      if (!Array.isArray(nodes) || nodes.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'card remote-node-card';
+        empty.textContent = 'No ESP-NOW sensor readings have been received yet.';
+        grid.appendChild(empty);
+        return;
+      }
+
+      nodes.forEach(node => {
+        const card = document.createElement('article');
+        card.className = `card remote-node-card${node.stale ? ' stale' : ''}`;
+
+        const header = document.createElement('div');
+        header.className = 'remote-node-header';
+        const title = document.createElement('h3');
+        title.textContent = node.deviceId || 'Unknown node';
+        const state = document.createElement('span');
+        state.className = `node-state ${node.stale ? 'stale' : 'live'}`;
+        state.textContent = node.stale ? 'stale' : 'live';
+        header.append(title, state);
+
+        const meta = document.createElement('div');
+        meta.className = 'remote-node-meta';
+        meta.textContent = `${node.mac || 'MAC unknown'} · ${Math.floor((node.ageMs || 0) / 1000)}s ago`;
+
+        const values = document.createElement('div');
+        values.className = 'remote-node-values';
+        const fieldSource = (node.data && Object.keys(node.data).length)
+          ? node.data
+          : node;
+        const entries = Object.entries(fieldSource).filter(([key]) =>
+          !['deviceId', 'timestamp', 'mac', 'lastSeen', 'ageMs', 'stale', 'data'].includes(key));
+        entries.forEach(([key, value]) => {
+          const item = document.createElement('div');
+          item.className = 'remote-node-value';
+          const label = document.createElement('span');
+          label.textContent = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
+          const display = document.createElement('strong');
+          display.textContent = typeof value === 'number'
+            ? Number(value.toFixed(3)).toString()
+            : (typeof value === 'object' ? JSON.stringify(value) : String(value));
+          item.append(label, display);
+          values.appendChild(item);
+        });
+
+        if (entries.length === 0) values.textContent = 'No sensor fields in latest packet.';
+        card.append(header, meta, values);
+        grid.appendChild(card);
+      });
+    }
+
+    async function fetchData() {
+      try {
+        const res = await fetch('/data');
+        if (!res.ok) throw new Error(`Hub API returned ${res.status}`);
+        const data = await res.json();
+        
+        // Update debug info
+        updateDebugInfo(data);
+        
+        updateNetworkStatus(data);
+        document.getElementById('temp').innerText = parseFloat(data.temp).toFixed(1) + "°C";
+        document.getElementById('hum').innerText = data.hum + "%";
+        document.getElementById('ldr').innerText = data.ldr + "%";
+        
+        updateRelayDisplay('relay1', data.relay.relay1, 1);
+        updateRelayDisplay('relay2', data.relay.relay2, 2);
+        updateRelayDisplay('relay3', data.relay.relay3, 3);
+        updateRelayDisplay('relay4', data.relay.relay4, 4);
+
+        try {
+          const nodesResponse = await fetch('/api/nodes');
+          if (nodesResponse.ok) renderRemoteNodes(await nodesResponse.json());
+        } catch (nodeError) {
+          console.error('Error fetching remote nodes:', nodeError);
+        }
+      } catch(e) {
+        console.error('Error fetching data:', e);
+        document.getElementById('debug-content').innerHTML += `<div style="color: red;">Error: ${e.message}</div>`;
+      }
+    }
+
+    function updateRelayDisplay(id, state, relayNum) {
+      const el = document.getElementById(id);
+      const statusIndicator = document.getElementById(`status-${relayNum}`);
+      const scheduleStatus = document.getElementById(`schedule-status-${relayNum}`);
+      const card = document.getElementById(`relay-card-${relayNum}`);
+      
+      el.innerText = state ? "ON" : "OFF";
+      el.classList.toggle("on", state);
+      el.classList.toggle("off", !state);
+      
+      if (state) {
+        statusIndicator.className = "status-indicator status-on";
+        scheduleStatus.className = "status-indicator status-on";
+        card.classList.add("active");
+      } else {
+        statusIndicator.className = "status-indicator status-off";
+        scheduleStatus.className = "status-indicator status-off";
+        card.classList.remove("active");
+      }
+    }
+
+    async function toggleRelay(relayNum) {
+      try {
+        await fetch('/toggle?relay=' + relayNum);
+        fetchData();
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // ============================================
+    // FIXED DELETE - Uses server's delete endpoint
+    // ============================================
+    
+    async function deleteSchedule(relayNum, scheduleId) {
+        // Confirm deletion
+        if (!confirm(`Delete this schedule for ${relayNames[relayNum-1]}?`)) {
+            return;
+        }
+        
+        // Get all schedules from localStorage
+        let schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+        const arr = schedules[relayNum] || [];
+        
+        // Find the schedule to delete
+        const schedule = arr.find(s => String(s.id) === String(scheduleId));
+        if (!schedule) {
+            alert("Schedule not found!");
+            return;
+        }
+        
+        // Build delete payload with ALL fields for matching
+        const payload = {
+            relay: relayNum,
+            id: parseInt(schedule.id)
+        };
+        
+        // Add all fields that the server uses for matching
+        if (schedule.isInterval) {
+            payload.startHour = schedule.startHourInterval || 0;
+            payload.startMinute = schedule.startMinuteInterval || 0;
+            payload.endHour = schedule.endHourInterval || 0;
+            payload.endMinute = schedule.endMinuteInterval || 0;
+            payload.days = schedule.days;
+            payload.isInterval = true;
+            payload.onMinutes = schedule.onMinutes || 0;
+            payload.offMinutes = schedule.offMinutes || 0;
+        } else {
+            payload.startHour = schedule.startHour || 0;
+            payload.startMinute = schedule.startMinute || 0;
+            payload.endHour = schedule.endHour || 0;
+            payload.endMinute = schedule.endMinute || 0;
+            payload.days = schedule.days;
+            payload.isInterval = false;
+        }
+        
+        console.log("Deleting schedule with payload:", payload);
+        
+        try {
+            // Call the delete endpoint
+            const response = await fetch('/deleteSchedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server returned ${response.status}: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log("Delete response:", result);
+            
+            // Remove from localStorage
+            schedules[relayNum] = arr.filter(s => String(s.id) !== String(scheduleId));
+            localStorage.setItem('relaySchedules', JSON.stringify(schedules));
+            
+            // Re-render
+            renderSchedulesForRelay(relayNum);
+            
+            // Reload from server to sync
+            await loadSchedules();
+            
+        } catch(err) {
+            console.error('Delete failed:', err);
+            alert('Could not delete schedule: ' + err.message);
+            // Reload to restore state
+            await loadSchedules();
+        }
+    }
+
+    // ============================================
+    // RENDER FUNCTION
+    // ============================================
+    
+    function renderSchedulesForRelay(relayNum) {
+        const container = document.getElementById(`schedules-container-${relayNum}`);
+        const schedules = getSchedulesFromStorage(relayNum);
+        
+        if (schedules.length === 0) {
+            container.innerHTML = '<div class="no-schedules">No schedules set</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        schedules.forEach(schedule => {
+            const scheduleElement = document.createElement('div');
+            const isInterval = schedule.isInterval || false;
+            scheduleElement.className = `schedule-item ${isInterval ? 'interval' : ''}`;
+            scheduleElement.dataset.scheduleId = schedule.id;
+            
+            const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            const activeDays = schedule.days
+                .map((active, index) => active ? dayNames[index] : null)
+                .filter(day => day !== null);
+            
+            let timeDisplay = '';
+            let detailDisplay = '';
+            let badgeText = isInterval ? 'Interval' : 'Time Range';
+            let badgeClass = isInterval ? 'badge-interval' : 'badge-time';
+            
+            if (isInterval) {
+                timeDisplay = `${schedule.onMinutes}m ON / ${schedule.offMinutes}m OFF`;
+                const hasWindow = schedule.startHourInterval || schedule.startMinuteInterval || 
+                                 schedule.endHourInterval || schedule.endMinuteInterval;
+                if (hasWindow) {
+                    const start = `${String(schedule.startHourInterval || 0).padStart(2, '0')}:${String(schedule.startMinuteInterval || 0).padStart(2, '0')}`;
+                    const end = `${String(schedule.endHourInterval || 0).padStart(2, '0')}:${String(schedule.endMinuteInterval || 0).padStart(2, '0')}`;
+                    detailDisplay = `Window: ${start} - ${end}`;
+                } else {
+                    detailDisplay = '24/7 operation';
+                }
+            } else {
+                const startTime = `${String(schedule.startHour).padStart(2, '0')}:${String(schedule.startMinute).padStart(2, '0')}`;
+                const endTime = `${String(schedule.endHour).padStart(2, '0')}:${String(schedule.endMinute).padStart(2, '0')}`;
+                timeDisplay = `${startTime} - ${endTime}`;
+                detailDisplay = 'Fixed time range';
+            }
+            
+            scheduleElement.innerHTML = `
+                <div class="schedule-item-header">
+                    <div>
+                        <div class="schedule-item-time">${timeDisplay}</div>
+                        <div style="font-size:0.8rem; color:var(--gray);">
+                            <span class="schedule-badge ${badgeClass}">${badgeText}</span>
+                            ${detailDisplay}
+                        </div>
+                    </div>
+                    <div class="schedule-status ${schedule.enabled ? 'status-on' : 'status-off'}">
+                        ${schedule.enabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                </div>
+                <div class="schedule-item-days">
+                    ${activeDays.map(day => `<span class="day-pill">${day}</span>`).join('')}
+                </div>
+                <div class="schedule-item-actions">
+                    <button class="schedule-item-btn btn-edit" onclick="editSchedule(${schedule.relay}, ${schedule.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="schedule-item-btn btn-delete" onclick="deleteSchedule(${schedule.relay}, ${schedule.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(scheduleElement);
+        });
+    }
+
+    // Build schedule ID like server
+    function buildScheduleIdLikeServer(schedule) {
+      if (schedule.id) return String(schedule.id);
+      const daysMask = (schedule.days || []).map(b => (b ? '1' : '0')).join('');
+      const start = `${String(schedule.startHour).padStart(2,'0')}:${String(schedule.startMinute).padStart(2,'0')}`;
+      const end   = `${String(schedule.endHour).padStart(2,'0')}:${String(schedule.endMinute).padStart(2,'0')}`;
+      return `r${schedule.relay}-${start}-${end}-${daysMask}`;
+    }
+
+    // Function to add a new schedule
+    async function addSchedule(relayNum) {
+      const type = scheduleTypes[relayNum];
+      
+      if (type === 'time') {
+        // Time Range Schedule
+        const startStr = document.getElementById(`start${relayNum}`).value;
+        const endStr = document.getElementById(`end${relayNum}`).value;
+        if(!startStr || !endStr) {
+          alert("Please set both start and end time.");
+          return;
+        }
+        
+        const [startHour, startMinute] = startStr.split(":").map(Number);
+        const [endHour, endMinute] = endStr.split(":").map(Number);
+
+        const days = [];
+        for(let i = 0; i < 7; i++) {
+          days.push(document.getElementById(`day${relayNum}_${i}`).checked);
+        }
+
+        const enabled = document.getElementById(`enabled${relayNum}`).checked;
+
+        const newSchedule = {
+          id: Date.now(),
+          relay: relayNum,
+          isInterval: false,
+          startHour,
+          startMinute,
+          endHour,
+          endMinute,
+          days,
+          enabled
+        };
+
+        // Get existing schedules from server
+        const res = await fetch('/getSchedules');
+        const existingData = await res.json();
+        const existingSchedules = Array.isArray(existingData) ? existingData : [];
+        
+        // Keep schedules for other relays, replace this relay's schedules
+        const otherSchedules = existingSchedules.filter(s => s.relay !== relayNum);
+        const allSchedules = [...otherSchedules, newSchedule];
+        
+        // Send ALL schedules back to server
+        const payload = { relay: allSchedules };
+        
+        const response = await fetch('/setSchedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if(!response.ok) {
+          alert("Failed to save schedule. Please try again.");
+          return;
+        }
+        
+        // Reload from server
+        await loadSchedules();
+        
+      } else {
+        // Interval Schedule
+        const onMinutes = parseInt(document.getElementById(`onMinutes${relayNum}`).value);
+        const offMinutes = parseInt(document.getElementById(`offMinutes${relayNum}`).value);
+        
+        if(!onMinutes || !offMinutes || onMinutes < 1 || offMinutes < 1) {
+          alert("Please set valid ON and OFF minutes (minimum 1 minute each).");
+          return;
+        }
+        
+        const startWindowStr = document.getElementById(`intervalStart${relayNum}`).value;
+        const endWindowStr = document.getElementById(`intervalEnd${relayNum}`).value;
+        
+        let startHourInterval = 0, startMinuteInterval = 0;
+        let endHourInterval = 0, endMinuteInterval = 0;
+        let hasWindow = false;
+        
+        if (startWindowStr && endWindowStr) {
+          const [sh, sm] = startWindowStr.split(":").map(Number);
+          const [eh, em] = endWindowStr.split(":").map(Number);
+          startHourInterval = sh;
+          startMinuteInterval = sm;
+          endHourInterval = eh;
+          endMinuteInterval = em;
+          hasWindow = true;
+        }
+
+        const days = [];
+        for(let i = 0; i < 7; i++) {
+          days.push(document.getElementById(`day${relayNum}_${i}`).checked);
+        }
+
+        const enabled = document.getElementById(`enabled${relayNum}`).checked;
+
+        const newSchedule = {
+          id: Date.now(),
+          relay: relayNum,
+          isInterval: true,
+          onMinutes,
+          offMinutes,
+          startHourInterval: hasWindow ? startHourInterval : 0,
+          startMinuteInterval: hasWindow ? startMinuteInterval : 0,
+          endHourInterval: hasWindow ? endHourInterval : 0,
+          endMinuteInterval: hasWindow ? endMinuteInterval : 0,
+          startHour: hasWindow ? startHourInterval : 0,
+          startMinute: hasWindow ? startMinuteInterval : 0,
+          endHour: hasWindow ? endHourInterval : 0,
+          endMinute: hasWindow ? endMinuteInterval : 0,
+          days,
+          enabled
+        };
+
+        // Get existing schedules from server
+        const res = await fetch('/getSchedules');
+        const existingData = await res.json();
+        const existingSchedules = Array.isArray(existingData) ? existingData : [];
+        
+        // Keep schedules for other relays, replace this relay's schedules
+        const otherSchedules = existingSchedules.filter(s => s.relay !== relayNum);
+        const allSchedules = [...otherSchedules, newSchedule];
+        
+        // Send ALL schedules back to server
+        const payload = { relay: allSchedules };
+        
+        const response = await fetch('/setSchedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if(!response.ok) {
+          alert("Failed to save schedule. Please try again.");
+          return;
+        }
+        
+        // Reload from server
+        await loadSchedules();
+      }
+    }
+
+    // Function to save schedule to localStorage
+    function saveScheduleToStorage(schedule) {
+      let schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      
+      if (!schedules[schedule.relay]) {
+        schedules[schedule.relay] = [];
+      }
+      
+      const existingIndex = schedules[schedule.relay].findIndex(s => s.id === schedule.id);
+      
+      if (existingIndex >= 0) {
+        schedules[schedule.relay][existingIndex] = schedule;
+      } else {
+        schedules[schedule.relay].push(schedule);
+      }
+      
+      localStorage.setItem('relaySchedules', JSON.stringify(schedules));
+    }
+
+    // Function to get schedules from localStorage
+    function getSchedulesFromStorage(relayNum) {
+      const schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      return schedules[relayNum] || [];
+    }
+
+    // Edit schedule
+    function editSchedule(relayNum, scheduleId) {
+      const schedules = getSchedulesFromStorage(relayNum);
+      const schedule = schedules.find(s => String(s.id) === String(scheduleId));
+      
+      if (!schedule) return;
+      
+      const isInterval = schedule.isInterval || false;
+      switchScheduleType(relayNum, isInterval ? 'interval' : 'time');
+      
+      if (isInterval) {
+        document.getElementById(`onMinutes${relayNum}`).value = schedule.onMinutes || 15;
+        document.getElementById(`offMinutes${relayNum}`).value = schedule.offMinutes || 45;
+        
+        if (schedule.startHourInterval || schedule.startMinuteInterval || 
+            schedule.endHourInterval || schedule.endMinuteInterval) {
+          document.getElementById(`intervalStart${relayNum}`).value = 
+            `${String(schedule.startHourInterval || 0).padStart(2, '0')}:${String(schedule.startMinuteInterval || 0).padStart(2, '0')}`;
+          document.getElementById(`intervalEnd${relayNum}`).value = 
+            `${String(schedule.endHourInterval || 0).padStart(2, '0')}:${String(schedule.endMinuteInterval || 0).padStart(2, '0')}`;
+        }
+      } else {
+        document.getElementById(`start${relayNum}`).value = 
+          `${String(schedule.startHour).padStart(2, '0')}:${String(schedule.startMinute).padStart(2, '0')}`;
+        document.getElementById(`end${relayNum}`).value = 
+          `${String(schedule.endHour).padStart(2, '0')}:${String(schedule.endMinute).padStart(2, '0')}`;
+      }
+      
+      for(let d = 0; d < 7; d++) {
+        const checkbox = document.getElementById(`day${relayNum}_${d}`);
+        if (checkbox) {
+          checkbox.checked = schedule.days[d] || false;
+        }
+      }
+      
+      const enabledCheckbox = document.getElementById(`enabled${relayNum}`);
+      if (enabledCheckbox) {
+        enabledCheckbox.checked = schedule.enabled !== false;
+      }
+      
+      let all = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      all[relayNum] = (all[relayNum] || []).filter(s => String(s.id) !== String(scheduleId));
+      localStorage.setItem('relaySchedules', JSON.stringify(all));
+      renderSchedulesForRelay(relayNum);
+      
+      document.getElementById(`schedules-container-${relayNum}`).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Load schedules from server
+    async function loadSchedules() {
+      try {
+        const res = await fetch('/getSchedules');
+        const data = await res.json();
+        
+        console.log("Received schedule data:", data);
+        
+        const byRelay = { 1: [], 2: [], 3: [], 4: [] };
+        
+        if (Array.isArray(data)) {
+          for (let i = 0; i < data.length; i++) {
+            const schedule = data[i];
+            const relayNum = schedule.relay;
+            
+            if (relayNum >= 1 && relayNum <= 4) {
+              schedule.id = schedule.id || buildScheduleIdLikeServer(schedule);
+              schedule.isInterval = schedule.isInterval || false;
+              byRelay[relayNum].push(schedule);
+            }
+          }
+        } else {
+          console.error("Expected array but got:", typeof data);
+        }
+
+        localStorage.setItem('relaySchedules', JSON.stringify(byRelay));
+        
+        for (let r = 1; r <= 4; r++) {
+          renderSchedulesForRelay(r);
+        }
+      } catch(e) {
+        console.error("Failed to load schedules", e);
+        try {
+          const res = await fetch('/getSchedules');
+          const text = await res.text();
+          console.error("Raw response:", text);
+        } catch (err) {
+          console.error("Couldn't get raw response:", err);
+        }
+      }
+    }
+
+    // Timelapse functionality
+    let timelapseImages = [];
+    let currentTimelapseIndex = 0;
+    let isTimelapsePlaying = false;
+    let timelapseInterval;
+    let timelapseTransitionSpeed = 2000;
+    let timelapseProgressInterval;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('play-pause').addEventListener('click', toggleTimelapsePlayPause);
+      document.getElementById('prev-btn').addEventListener('click', showPreviousTimelapseImage);
+      document.getElementById('next-btn').addEventListener('click', showNextTimelapseImage);
+      document.getElementById('fullscreen-btn').addEventListener('click', toggleTimelapseFullscreen);
+      document.getElementById('view-gallery').addEventListener('click', viewGalleryPage);
+      document.getElementById('refresh-btn').addEventListener('click', loadTimelapseImages);
+      
+      const speedSlider = document.getElementById('speed-slider');
+      const speedValue = document.getElementById('speed-value');
+      
+      speedSlider.addEventListener('input', function() {
+        timelapseTransitionSpeed = (11 - this.value) * 500;
+        speedValue.textContent = (timelapseTransitionSpeed/1000).toFixed(1) + 's';
+        
+        if (isTimelapsePlaying) {
+          clearInterval(timelapseInterval);
+          clearInterval(timelapseProgressInterval);
+          startTimelapsePlayback();
+        }
+      });
+      
+      loadTimelapseImages();
+      
+      for (let r = 1; r <= 4; r++) {
+        renderSchedulesForRelay(r);
+      }
+    });
+    
+    async function loadTimelapseImages() {
+      const container = document.getElementById('timelapse-container');
+      const loading = document.getElementById('timelapse-loading');
+      
+      try {
+        loading.style.display = 'block';
+        container.innerHTML = '<div class="timelapse-loading" id="timelapse-loading"><i class="fas fa-spinner"></i> Loading timelapse images...</div>';
+        
+        const response = await fetch(`${SERVER_BASE_URL}/gallery`);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        const imageRegex = /<img src="(\/images\/[^"]+)"[^>]*>/g;
+        const nameRegex = /<p>([^<]+)<\/p>/g;
+        
+        let match;
+        const imageUrls = [];
+        const imageNames = [];
+        
+        while ((match = imageRegex.exec(html)) !== null) {
+          imageUrls.push(match[1]);
+        }
+        
+        while ((match = nameRegex.exec(html)) !== null) {
+          imageNames.push(match[1]);
+        }
+        
+        if (imageUrls.length === 0) {
+          throw new Error("No images found in gallery");
+        }
+        
+        timelapseImages = [];
+        for (let i = 0; i < imageUrls.length; i++) {
+          timelapseImages.push({
+            url: `${SERVER_BASE_URL}${imageUrls[i]}`,
+            filename: imageNames[i] || `Image ${i+1}`
+          });
+        }
+        
+        document.getElementById('total-images').textContent = timelapseImages.length;
+        
+        container.innerHTML = '';
+        timelapseImages.forEach((image, index) => {
+          const slide = document.createElement('div');
+          slide.className = 'timelapse-slide';
+          slide.style.backgroundImage = `url('${image.url}')`;
+          if (index === 0) slide.classList.add('active');
+          container.appendChild(slide);
+        });
+        
+        showTimelapseImage(0);
+        toggleTimelapsePlayPause();
+        
+      } catch (err) {
+        console.error("Error loading images:", err);
+        container.innerHTML = `
+          <div class="timelapse-error">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <h3>Error loading images</h3>
+            <p>${err.message || 'Please check if the server is running'}</p>
+            <p>Try accessing <a href="${SERVER_BASE_URL}/gallery" target="_blank" style="color: white;">${SERVER_BASE_URL}/gallery</a> directly</p>
+          </div>
+        `;
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+    
+    function showTimelapseImage(index) {
+      if (index < 0) index = timelapseImages.length - 1;
+      if (index >= timelapseImages.length) index = 0;
+      
+      currentTimelapseIndex = index;
+      
+      const slides = document.querySelectorAll('.timelapse-slide');
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+      
+      document.getElementById('current-index').textContent = index + 1;
+      document.getElementById('current-filename').textContent = timelapseImages[index].filename;
+      
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = '0%';
+    }
+    
+    function showNextTimelapseImage() {
+      showTimelapseImage(currentTimelapseIndex + 1);
+    }
+    
+    function showPreviousTimelapseImage() {
+      showTimelapseImage(currentTimelapseIndex - 1);
+    }
+    
+    function toggleTimelapsePlayPause() {
+      const playPauseBtn = document.getElementById('play-pause');
+      
+      if (isTimelapsePlaying) {
+        clearInterval(timelapseInterval);
+        clearInterval(timelapseProgressInterval);
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i> Play';
+      } else {
+        startTimelapsePlayback();
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+      }
+      
+      isTimelapsePlaying = !isTimelapsePlaying;
+    }
+    
+    function startTimelapsePlayback() {
+      clearInterval(timelapseInterval);
+      clearInterval(timelapseProgressInterval);
+      
+      timelapseInterval = setInterval(showNextTimelapseImage, timelapseTransitionSpeed);
+      
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = '0%';
+      
+      const startTime = Date.now();
+      timelapseProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(100, (elapsed / timelapseTransitionSpeed) * 100);
+        progressBar.style.width = `${progress}%`;
+        
+        if (progress >= 100) {
+          clearInterval(timelapseProgressInterval);
+        }
+      }, 50);
+    }
+    
+    function toggleTimelapseFullscreen() {
+      const container = document.querySelector('.timelapse-container');
+      
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+    
+    function viewGalleryPage() {
+      window.open(`${SERVER_BASE_URL}/gallery`, '_blank');
+    }
+    
+    document.addEventListener('fullscreenchange', updateTimelapseFullscreenStyles);
+    document.addEventListener('webkitfullscreenchange', updateTimelapseFullscreenStyles);
+    document.addEventListener('msfullscreenchange', updateTimelapseFullscreenStyles);
+    
+    function updateTimelapseFullscreenStyles() {}
+    
+    document.addEventListener('keydown', function(e) {
+      const isEditing = Array.from({length: 4}).some((_, i) => 
+        document.getElementById(`edit-form-${i+1}`).style.display === 'block'
+      );
+      
+      if (isEditing) return;
+      
+      switch(e.key) {
+        case 'ArrowLeft':
+          showPreviousTimelapseImage();
+          break;
+        case 'ArrowRight':
+          showNextTimelapseImage();
+          break;
+        case ' ':
+          if (document.activeElement.tagName !== 'BUTTON') {
+            toggleTimelapsePlayPause();
+            e.preventDefault();
+          }
+          break;
+      }
+    });
+
+    // Initialize the dashboard
+    setInterval(fetchData, 2000);
+    fetchData();
+    loadSchedules();
+  </script>
+</body>
+</html>

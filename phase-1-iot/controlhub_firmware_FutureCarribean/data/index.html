@@ -1,0 +1,3192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmWiz Control Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Your existing CSS remains the same */
+    :root {
+      --primary: #1b5e20;
+      --secondary: #43a047;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f8f9fa;
+      --dark: #17351c;
+      --gray: #58705c;
+      --surface: #ffffff;
+      --surface-soft: #f3faf3;
+      --card-shadow: 0 6px 16px rgba(20, 74, 31, 0.10);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #edf7ee;
+      color: #1d3321;
+      line-height: 1.6;
+      padding-bottom: 20px;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #0f4518, var(--primary), #2e7d32);
+      color: white;
+      padding: 1.2rem;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    .dashboard-section {
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      font-size: 1.4rem;
+      color: var(--dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title i {
+      margin-right: 10px;
+      color: var(--primary);
+    }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .sensor-card {
+      text-align: center;
+      padding: 20px;
+      cursor: default;
+    }
+    
+    .relay-card {
+      padding: 0;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    
+    .relay-card.active {
+      border-color: var(--secondary);
+    }
+    
+    .relay-header {
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #2e7d32, var(--primary));
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .relay-content {
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .value {
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    
+    .on { color: var(--secondary); }
+    .off { color: var(--danger); }
+    
+    .icon-wrapper {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 1.8rem;
+    }
+    
+    .sensor-card .icon-wrapper {
+      background: rgba(46, 125, 50, 0.12);
+      color: var(--primary);
+    }
+    
+    .editable {
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.7);
+      padding: 2px 4px;
+      transition: var(--transition);
+    }
+    
+    .editable:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    
+    .edit-form {
+      display: none;
+      margin-top: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .edit-form input {
+      padding: 8px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .edit-form button {
+      padding: 6px 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .edit-form button:hover {
+      background: #124e1b;
+    }
+    
+    .relay-scheduler {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+    }
+    
+    .schedule-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      padding: 20px;
+      transition: var(--transition);
+      position: relative;
+    }
+    
+    .schedule-card:hover {
+      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    }
+    
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .schedule-title {
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+    }
+    
+    .schedule-title i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .schedule-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    
+    .schedule-type-btn {
+      flex: 1;
+      padding: 8px;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    
+    .schedule-type-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .schedule-type-btn:hover:not(.active) {
+      background: #e9ecef;
+    }
+    
+    .time-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .time-input-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .time-input-group label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: var(--gray);
+    }
+    
+    .time-input-group input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    
+    .time-input-group input[type="number"] {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      width: 100%;
+    }
+    
+    .days-selector {
+      margin-bottom: 20px;
+    }
+    
+    .days-selector label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .day-checkbox {
+      display: none;
+    }
+    
+    .day-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 5px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .day-checkbox:checked + .day-label {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .set-schedule-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .set-schedule-btn:hover {
+      background: #124e1b;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-on {
+      background: var(--secondary);
+      box-shadow: 0 0 8px var(--secondary);
+    }
+    
+    .status-off {
+      background: var(--danger);
+    }
+    
+    .debug-panel {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      border-left: 4px solid var(--warning);
+    }
+    
+    .debug-toggle {
+      background: var(--warning);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    
+    .debug-content {
+      display: none;
+      font-family: monospace;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Timelapse Styles */
+    .timelapse-container {
+      width: 100%;
+      height: 60vh;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+      position: relative;
+      background: #000;
+    }
+    
+    .timelapse-slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #000;
+    }
+    
+    .timelapse-slide.active {
+      opacity: 1;
+    }
+    
+    .timelapse-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 15px;
+    }
+    
+    .timelapse-btn {
+      background: var(--primary);
+      border: none;
+      padding: 12px 25px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .timelapse-btn:hover {
+      background: #124e1b;
+      transform: translateY(-2px);
+    }
+    
+    .timelapse-btn i {
+      margin-right: 8px;
+    }
+    
+    .timelapse-speed-control {
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+    
+    .timelapse-speed-control label {
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+    
+    .timelapse-speed-control input {
+      width: 100px;
+    }
+    
+    .timelapse-info {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .image-counter {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .image-filename {
+      font-size: 1rem;
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .timelapse-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 1.5rem;
+      color: white;
+      z-index: 10;
+    }
+    
+    .timelapse-loading i {
+      animation: spin 1.5s linear infinite;
+    }
+    
+    .timelapse-error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.2);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 80%;
+      color: white;
+    }
+    
+    .timelapse-progress-container {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .timelapse-progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .timelapse-view-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* New styles for multiple schedules */
+    .schedules-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .schedule-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      border-left: 4px solid var(--primary);
+      position: relative;
+    }
+    
+    .schedule-item.interval {
+      border-left-color: var(--warning);
+    }
+    
+    .schedule-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .schedule-item-time {
+      font-weight: bold;
+      color: var(--dark);
+    }
+    
+    .schedule-item-days {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    
+    .day-pill {
+      background: var(--primary);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+    
+    .schedule-item-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .schedule-item-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: var(--transition);
+    }
+    
+    .schedule-item-btn:hover {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+    
+    .btn-edit {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-delete {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .add-schedule-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    
+    .no-schedules {
+      text-align: center;
+      color: var(--gray);
+      font-style: italic;
+      padding: 20px;
+    }
+    
+    .schedule-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge-interval {
+      background: var(--warning);
+      color: white;
+    }
+    
+    .badge-time {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .schedule-detail {
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    /* CRON scheduler */
+    .legacy-schedule-card { display: none !important; }
+
+    .cron-schedule-card {
+      border-top: 4px solid var(--primary);
+      overflow: visible;
+    }
+
+    .cron-profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .cron-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--gray);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .cron-chip.active { color: white; background: var(--secondary); }
+    .cron-chip.precision { color: white; background: var(--warning); }
+
+    .cron-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .cron-toggle {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid #d8e6da;
+      border-radius: 8px;
+      background: var(--surface-soft);
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .cron-toggle input { accent-color: var(--primary); }
+
+    .cron-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+      color: var(--gray);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .cron-input, .cron-command-input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #c8d8ca;
+      border-radius: 8px;
+      background: #fbfefb;
+      color: var(--dark);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+    }
+
+    .cron-input:focus, .cron-command-input:focus {
+      outline: 3px solid rgba(67, 160, 71, 0.2);
+      border-color: var(--secondary);
+    }
+
+    .cron-advanced {
+      margin: 12px 0 14px;
+      border: 1px solid #d8e6da;
+      border-radius: 9px;
+      background: #fbfefb;
+    }
+
+    .cron-advanced summary {
+      padding: 10px 12px;
+      color: var(--gray);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .cron-advanced-body { padding: 0 12px 4px; }
+
+    .cron-builder {
+      margin: 14px 0;
+      padding: 14px;
+      border: 1px solid #d8e6da;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #fbfefb, #f3faf4);
+    }
+
+    .cron-builder[hidden] { display: none; }
+    .cron-builder h4 { margin-bottom: 4px; color: var(--dark); }
+    .cron-builder-intro { margin-bottom: 12px; color: var(--gray); font-size: 0.78rem; }
+
+    .cron-builder-controls {
+      display: grid;
+      grid-template-columns: minmax(130px, 0.65fr) 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .cron-builder-label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: var(--gray);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .cron-builder-select, .cron-builder-value {
+      width: 100%;
+      min-height: 36px;
+      padding: 7px 9px;
+      border: 1px solid #c8d8ca;
+      border-radius: 7px;
+      background: white;
+      color: var(--dark);
+      font-size: 0.82rem;
+    }
+
+    .cron-builder-value { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .cron-builder-row {
+      display: grid;
+      grid-template-columns: minmax(110px, 0.7fr) minmax(120px, 0.85fr) 1.5fr;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 8px;
+    }
+
+    .cron-builder-row small { padding-bottom: 9px; color: var(--gray); font-size: 0.7rem; }
+    .cron-builder-preview {
+      margin-top: 12px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      background: #edf7ee;
+      color: var(--dark);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.76rem;
+      overflow-wrap: anywhere;
+    }
+
+    .easy-schedule {
+      margin: 14px 0;
+      padding: 14px;
+      border: 1px solid #d8e6da;
+      border-radius: 10px;
+      background: #fbfefb;
+    }
+
+    .easy-schedule h4 { margin-bottom: 4px; color: var(--dark); }
+    .easy-schedule-intro { margin-bottom: 12px; color: var(--gray); font-size: 0.78rem; }
+    .easy-time-grid, .easy-cycle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .easy-days {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .easy-day { position: absolute; opacity: 0; pointer-events: none; }
+    .easy-day-label {
+      min-width: 34px;
+      padding: 7px 8px;
+      border: 1px solid #c8d8ca;
+      border-radius: 7px;
+      background: white;
+      color: var(--gray);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .easy-day:checked + .easy-day-label {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    .easy-schedule[hidden], .easy-cycle-grid[hidden] { display: none; }
+    .easy-preview {
+      margin-top: 12px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      background: #edf7ee;
+      color: var(--dark);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.74rem;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 576px) {
+      .cron-form-grid, .cron-builder-controls, .cron-builder-row,
+      .easy-time-grid, .easy-cycle-grid { grid-template-columns: 1fr; }
+      .cron-builder-row small { padding-bottom: 0; }
+    }
+
+    .cron-help {
+      margin: 2px 0 14px;
+      color: var(--gray);
+      font-size: 0.78rem;
+    }
+
+    .cron-presets, .cron-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .cron-preset, .cron-action {
+      border: 1px solid #c8d8ca;
+      border-radius: 7px;
+      padding: 8px 10px;
+      background: white;
+      color: var(--dark);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .cron-preset:hover, .cron-action:hover { border-color: var(--secondary); color: var(--primary); }
+    .cron-action.primary { border-color: var(--primary); background: var(--primary); color: white; }
+    .cron-action.danger { border-color: var(--danger); background: var(--danger); color: white; }
+
+    .cron-current {
+      min-height: 42px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f5f9f5;
+      color: var(--gray);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.75rem;
+      overflow-wrap: anywhere;
+    }
+
+    .cron-command-panel {
+      grid-column: 1 / -1;
+      padding: 18px 20px;
+      border: 1px solid #b9dcbc;
+      border-left: 6px solid var(--warning);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fffdf5, #f6fbf6);
+      box-shadow: var(--card-shadow);
+    }
+
+    .cron-command-panel h3 { color: var(--dark); margin-bottom: 4px; }
+    .cron-command-panel p { color: var(--gray); font-size: 0.84rem; margin-bottom: 10px; }
+    .cron-command-status { margin-top: 10px; min-height: 1.3em; font-size: 0.84rem; }
+    .cron-command-status.ok { color: var(--primary); }
+    .cron-command-status.error { color: var(--danger); }
+
+    @media (max-width: 576px) {
+      .cron-form-grid { grid-template-columns: 1fr; }
+    }
+
+    .network-banner {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px 20px;
+      align-items: center;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #ffffff, #e5f5e7);
+      border: 1px solid #b9dcbc;
+      border-left: 6px solid var(--primary);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .mode-badge, .node-state {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 92px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      color: white;
+      background: var(--gray);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .mode-badge.online, .node-state.live { background: var(--secondary); }
+    .mode-badge.offline { background: var(--warning); }
+    .mode-badge.connecting { background: var(--gray); }
+    .node-state.stale { background: var(--danger); }
+
+    .network-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: var(--gray);
+      font-size: 0.92rem;
+    }
+
+    .remote-node-card {
+      padding: 18px;
+      border-top: 4px solid var(--secondary);
+    }
+
+    .remote-node-card.stale { border-top-color: var(--danger); opacity: 0.82; }
+
+    .remote-node-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .remote-node-meta {
+      color: var(--gray);
+      font-size: 0.82rem;
+      overflow-wrap: anywhere;
+      margin-bottom: 14px;
+    }
+
+    .remote-node-values {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .remote-node-value {
+      padding: 9px 10px;
+      background: var(--surface-soft);
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .remote-node-value span {
+      display: block;
+      color: var(--gray);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    
+    @media (max-width: 768px) {
+      .card-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .relay-scheduler {
+        grid-template-columns: 1fr;
+      }
+      
+      .timelapse-container {
+        height: 40vh;
+      }
+      
+      .timelapse-controls, .timelapse-view-controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .timelapse-btn, .timelapse-speed-control {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      header {
+        font-size: 1.3rem;
+        padding: 1rem;
+      }
+      
+      .timelapse-container {
+        height: 35vh;
+      }
+      
+      .time-inputs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><i class="fas fa-seedling"></i> FarmWiz Control Hub</div>
+    <div id="current-time">Loading...</div>
+  </header>
+
+  <div class="container">
+    <section class="network-banner" aria-live="polite">
+      <span id="network-mode" class="mode-badge connecting">Connecting</span>
+      <div>
+        <strong id="network-summary">Starting network services...</strong>
+        <div class="network-details">
+          <span id="network-ip">IP: --</span>
+          <span id="network-channel">Channel: --</span>
+          <span id="network-cloud">Cloud: --</span>
+          <span id="network-nodes">Nodes: 0</span>
+          <span id="network-uptime">Uptime: --</span>
+          <span id="network-reset">Reset: --</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sensor Cards Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-sensor"></i> Environment Sensors</h2>
+      <div class="card-grid">
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-temperature-high"></i>
+          </div>
+          <h3>Temperature</h3>
+          <div id="temp" class="value">-- °C</div>
+        </div>
+        
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-tint"></i>
+          </div>
+          <h3>Humidity</h3>
+          <div id="hum" class="value">-- %</div>
+        </div>
+        
+        <div class="card sensor-card">
+          <div class="icon-wrapper">
+            <i class="fas fa-sun"></i>
+          </div>
+          <h3>Light Level</h3>
+          <div id="ldr" class="value">-- lx</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-tower-broadcast"></i> Remote Sensor Nodes</h2>
+      <div class="card-grid" id="remote-nodes-grid">
+        <div class="card remote-node-card">Waiting for offline ESP-NOW readings...</div>
+      </div>
+    </section>
+
+    <!-- Relay Controls Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-toggle-on"></i> Device Controls</h2>
+      <div class="card-grid">
+        <div class="card relay-card" id="relay-card-1" onclick="toggleRelay(1)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(1)" id="relay1-name">Sprinkler</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-1"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-shower"></i>
+            </div>
+            <div id="relay1" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-1">
+            <input type="text" id="edit-input-1" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(1)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-2" onclick="toggleRelay(2)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(2)" id="relay2-name">Light</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-2"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div id="relay2" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-2">
+            <input type="text" id="edit-input-2" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(2)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-3" onclick="toggleRelay(3)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(3)" id="relay3-name">Air Pump</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-3"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-wind"></i>
+            </div>
+            <div id="relay3" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-3">
+            <input type="text" id="edit-input-3" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(3)">Save</button>
+          </div>
+        </div>
+        
+        <div class="card relay-card" id="relay-card-4" onclick="toggleRelay(4)">
+          <div class="relay-header">
+            <h3>
+              <span class="editable" onclick="event.stopPropagation(); startEdit(4)" id="relay4-name">Irrigation Pump</span>
+            </h3>
+            <div class="status-indicator status-off" id="status-4"></div>
+          </div>
+          <div class="relay-content">
+            <div class="icon-wrapper">
+              <i class="fas fa-water"></i>
+            </div>
+            <div id="relay4" class="value off">OFF</div>
+            <p>Click to toggle</p>
+          </div>
+          <div class="edit-form" id="edit-form-4">
+            <input type="text" id="edit-input-4" maxlength="20" placeholder="Device name">
+            <button onclick="saveEdit(4)">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scheduler Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-clock"></i> Device Schedules</h2>
+      <div class="relay-scheduler" id="schedules"></div>
+    </section>
+
+    <!-- Timelapse Section -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-film"></i> Plant Timelapse</h2>
+      <div style="width:100%; height:100%;">
+    <iframe id="espStreamIframe" src="http://192.168.100.237:3000/stream" style="width:100%; height:100%; border:none;"></iframe>
+</div>
+
+<script>
+self.onInit = function() {
+    var iframe = document.getElementById('espStreamIframe');
+    if (!iframe) return;
+    
+    // Refresh the iframe every 10 seconds to keep stream alive
+    var refreshInterval = setInterval(function() {
+        // Reload the iframe by re-setting the src
+        iframe.src = iframe.src;
+        console.log(" Refreshing stream...");
+    }, 10000);
+    
+    // Store interval for cleanup
+    self._refreshInterval = refreshInterval;
+};
+
+self.onDestroy = function() {
+    if (self._refreshInterval) {
+        clearInterval(self._refreshInterval);
+        self._refreshInterval = null;
+    }
+    var iframe = document.getElementById('espStreamIframe');
+    if (iframe) {
+        iframe.src = '';
+    }
+};
+</script>
+      <!--<div class="timelapse-info">
+        <div class="image-counter">Image <span id="current-index">0</span> of <span id="total-images">0</span></div>
+        <div class="image-filename" id="current-filename">Loading images...</div>
+        <div class="timelapse-progress-container">
+          <div class="timelapse-progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+      
+      <div class="timelapse-container" id="timelapse-container">
+        <div class="timelapse-loading" id="timelapse-loading">
+          <i class="fas fa-spinner"></i> Loading timelapse images...
+        </div>
+      </div>
+      
+      <div class="timelapse-controls">
+        <button class="timelapse-btn" id="play-pause">
+          <i class="fas fa-play"></i> Play
+        </button>
+        <button class="timelapse-btn" id="prev-btn">
+          <i class="fas fa-backward-step"></i> Previous
+        </button>
+        <button class="timelapse-btn" id="next-btn">
+          <i class="fas fa-forward-step"></i> Next
+        </button>
+        <div class="timelapse-speed-control">
+          <label for="speed-slider"><i class="fas fa-gauge-high"></i> Speed:</label>
+          <input type="range" id="speed-slider" min="1" max="10" value="5">
+          <span id="speed-value">2s</span>
+        </div>
+        <button class="timelapse-btn" id="fullscreen-btn">
+          <i class="fas fa-expand"></i> Fullscreen
+        </button>
+      </div>
+      
+      <div class="timelapse-view-controls">
+        <button class="timelapse-btn" id="view-gallery">
+          <i class="fas fa-grid"></i> View Gallery Page
+        </button>
+        <button class="timelapse-btn" id="refresh-btn">
+          <i class="fas fa-sync-alt"></i> Reload Images
+        </button>
+      </div>-->
+    </section>
+    
+    <!-- Debug Panel -->
+    <section class="dashboard-section">
+      <h2 class="section-title"><i class="fas fa-bug"></i> Debug Panel</h2>
+      <div class="debug-panel">
+        <button class="debug-toggle" onclick="toggleDebug()">Toggle Debug Info</button>
+        <div class="debug-content" id="debug-content">
+          <div>Waiting for data...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Server configuration
+    const SERVER_BASE_URL = "http://192.168.100.82:9000";
+    
+    // Load custom relay names from localStorage or use defaults
+    const defaultRelayNames = ["Sprinkler", "Light", "Air Pump", "Irrigation Pump"];
+    const defaultIcons = ["fa-shower", "fa-lightbulb", "fa-wind", "fa-water"];
+    let relayNames = [];
+    
+    // Initialize relay names
+    for (let i = 1; i <= 4; i++) {
+      let savedName = localStorage.getItem(`relay${i}-name`);
+      if (i === 4 && (savedName === "Mirror" || savedName === "Water Valve")) {
+        savedName = "Irrigation Pump";
+        localStorage.setItem(`relay${i}-name`, savedName);
+      }
+      relayNames[i-1] = savedName || defaultRelayNames[i-1];
+      document.getElementById(`relay${i}-name`).textContent = relayNames[i-1];
+    }
+
+    // Update current time
+    function updateCurrentTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      document.getElementById('current-time').textContent = now.toLocaleDateString('en-US', options);
+    }
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+
+    // Build schedule forms with interval support
+    for(let r=1;r<=4;r++){
+      const div = document.createElement("div");
+      div.className="schedule-card";
+      div.innerHTML = `
+        <div class="schedule-header">
+          <div class="schedule-title"><i class="fas ${defaultIcons[r-1]}"></i> <span id="schedule-relay${r}-name">${relayNames[r-1]}</span></div>
+          <div class="status-indicator status-off" id="schedule-status-${r}"></div>
+        </div>
+        
+        <div class="schedule-type-selector">
+          <button class="schedule-type-btn active" data-relay="${r}" data-type="time" onclick="switchScheduleType(${r}, 'time')">
+            <i class="fas fa-clock"></i> Time Range
+          </button>
+          <button class="schedule-type-btn" data-relay="${r}" data-type="interval" onclick="switchScheduleType(${r}, 'interval')">
+            <i class="fas fa-repeat"></i> Interval
+          </button>
+        </div>
+        
+        <div class="schedules-container" id="schedules-container-${r}">
+          <div class="no-schedules">No schedules set</div>
+        </div>
+        
+        <!-- Time Range Inputs -->
+        <div id="time-range-inputs-${r}" class="schedule-inputs">
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>Start Time</label>
+              <input type="time" id="start${r}">
+            </div>
+            <div class="time-input-group">
+              <label>End Time</label>
+              <input type="time" id="end${r}">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Interval Inputs -->
+        <div id="interval-inputs-${r}" class="schedule-inputs" style="display:none;">
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>ON Minutes</label>
+              <input type="number" id="onMinutes${r}" min="1" max="1440" value="15">
+            </div>
+            <div class="time-input-group">
+              <label>OFF Minutes</label>
+              <input type="number" id="offMinutes${r}" min="1" max="1440" value="45">
+            </div>
+          </div>
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label>Start Window (optional)</label>
+              <input type="time" id="intervalStart${r}">
+            </div>
+            <div class="time-input-group">
+              <label>End Window (optional)</label>
+              <input type="time" id="intervalEnd${r}">
+            </div>
+          </div>
+          <div style="font-size:0.85rem; color:var(--gray); margin-bottom:10px;">
+            <i class="fas fa-info-circle"></i> Leave window empty for 24/7 operation
+          </div>
+        </div>
+        
+        <div class="days-selector">
+          <label>Active Days</label>
+          <div class="days-grid">
+            <input type="checkbox" id="day${r}_0" class="day-checkbox">
+            <label for="day${r}_0" class="day-label">S</label>
+            
+            <input type="checkbox" id="day${r}_1" class="day-checkbox">
+            <label for="day${r}_1" class="day-label">M</label>
+            
+            <input type="checkbox" id="day${r}_2" class="day-checkbox">
+            <label for="day${r}_2" class="day-label">T</label>
+            
+            <input type="checkbox" id="day${r}_3" class="day-checkbox">
+            <label for="day${r}_3" class="day-label">W</label>
+            
+            <input type="checkbox" id="day${r}_4" class="day-checkbox">
+            <label for="day${r}_4" class="day-label">T</label>
+            
+            <input type="checkbox" id="day${r}_5" class="day-checkbox">
+            <label for="day${r}_5" class="day-label">F</label>
+            
+            <input type="checkbox" id="day${r}_6" class="day-checkbox">
+            <label for="day${r}_6" class="day-label">S</label>
+          </div>
+        </div>
+        <div class="time-input-group">
+          <label>
+            <input type="checkbox" id="enabled${r}" checked> Enabled
+          </label>
+        </div>
+        <button class="set-schedule-btn" onclick="addSchedule(${r})">Add Schedule</button>
+      `;
+      document.getElementById("schedules").appendChild(div);
+    }
+
+    // The hub now exposes one CRON profile per relay. Keep the legacy markup
+    // in the file for backwards compatibility, but render the active editor
+    // from the six-field CRON model used by the firmware.
+    document.querySelectorAll('#schedules > .schedule-card').forEach(card => {
+      card.classList.add('legacy-schedule-card');
+    });
+
+    const cronCommandPanel = document.createElement('div');
+    cronCommandPanel.className = 'cron-command-panel';
+    cronCommandPanel.innerHTML = `
+      <h3><i class="fas fa-terminal"></i> CRON command receiver</h3>
+      <p>Paste a command in the format <code>CRON SET &lt;relay&gt; &lt;enabled&gt; &lt;seconds&gt; &lt;cron-on&gt; | &lt;cron-off&gt;</code>.</p>
+      <label class="cron-field" for="cron-command-input">
+        Command
+        <input id="cron-command-input" class="cron-command-input" type="text"
+          autocomplete="off" spellcheck="false"
+          placeholder="CRON SET 1 1 1 */2 * * * * * | 1-59/2 * * * * *">
+      </label>
+      <div class="cron-actions">
+        <button class="cron-action primary" type="button" onclick="submitCronCommand()">
+          <i class="fas fa-paper-plane"></i> Apply command
+        </button>
+      </div>
+      <div id="cron-command-status" class="cron-command-status" role="status" aria-live="polite"></div>
+    `;
+    document.getElementById('schedules').prepend(cronCommandPanel);
+
+    for (let r = 1; r <= 4; r++) {
+      const card = document.createElement('article');
+      card.className = 'schedule-card cron-schedule-card';
+      card.innerHTML = `
+        <div class="schedule-header">
+          <div class="schedule-title"><i class="fas ${defaultIcons[r-1]}"></i> <span>${relayNames[r-1]}</span></div>
+          <div class="status-indicator status-off" id="cron-schedule-status-${r}"></div>
+        </div>
+        <div class="cron-profile-meta">
+          <span class="cron-chip" id="cron-enabled-${r}"><i class="fas fa-circle"></i> Disabled</span>
+          <span class="cron-chip" id="cron-precision-${r}"><i class="fas fa-stopwatch"></i> Minute resolution</span>
+        </div>
+        <div class="cron-form-grid">
+          <label class="cron-toggle">
+            <input type="checkbox" id="cron-enabled-input-${r}">
+            Enabled
+          </label>
+          <label class="cron-toggle">
+            <input type="checkbox" id="cron-seconds-input-${r}">
+            Second precision
+          </label>
+        </div>
+        <div class="easy-schedule">
+          <h4>Easy schedule</h4>
+          <p class="easy-schedule-intro">Set a normal time window or a repeating ON/OFF cycle. Compatible CRON profiles are shown here; other profiles use Custom mode and remain in Advanced CRON.</p>
+          <label class="cron-builder-label" for="easy-mode-${r}">
+            Schedule type
+            <select id="easy-mode-${r}" class="cron-builder-select" onchange="updateEasySchedule(${r}); editEasyCron(${r})">
+              <option value="time">Time range</option>
+              <option value="cycle">Repeating cycle</option>
+              <option value="custom">Custom (Advanced CRON)</option>
+            </select>
+          </label>
+          <div id="easy-time-${r}">
+            <div class="easy-time-grid">
+            <label class="cron-builder-label" for="easy-start-${r}">Turn ON at<input id="easy-start-${r}" class="cron-builder-value" type="time" value="06:00" oninput="editEasyCron(${r})"></label>
+            <label class="cron-builder-label" for="easy-end-${r}">Turn OFF at<input id="easy-end-${r}" class="cron-builder-value" type="time" value="21:00" oninput="editEasyCron(${r})"></label>
+            </div>
+            <div class="cron-builder-label" style="margin-top:12px;">Active days</div>
+            <div class="easy-days" aria-label="Active days">
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-0" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-0">Sun</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-1" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-1">Mon</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-2" checked onchange="editEasyCron(${r})"> <label class="easy-day-label" for="easy-day-${r}-2">Tue</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-3" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-3">Wed</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-4" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-4">Thu</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-5" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-5">Fri</label>
+              <input class="easy-day" type="checkbox" id="easy-day-${r}-6" checked onchange="editEasyCron(${r})"><label class="easy-day-label" for="easy-day-${r}-6">Sat</label>
+            </div>
+          </div>
+          <div id="easy-cycle-${r}" class="easy-cycle-grid" hidden>
+            <label class="cron-builder-label" for="easy-on-minutes-${r}">ON duration (minutes)<input id="easy-on-minutes-${r}" class="cron-builder-value" type="number" min="1" max="59" value="15" oninput="editEasyCron(${r})"></label>
+            <label class="cron-builder-label" for="easy-off-minutes-${r}">OFF duration (minutes)<input id="easy-off-minutes-${r}" class="cron-builder-value" type="number" min="1" max="59" value="45" oninput="editEasyCron(${r})"></label>
+          </div>
+          <div id="easy-custom-${r}" class="cron-help" hidden>Custom CRON cannot be represented safely by the Easy Schedule fields. Use the Advanced CRON settings below.</div>
+        </div>
+        <details class="cron-advanced">
+          <summary>Advanced settings, output and manual CRON</summary>
+          <div class="cron-advanced-body">
+        <div class="cron-actions">
+          <button class="cron-action" type="button" onclick="toggleCronBuilder(${r})">
+            <i class="fas fa-sliders"></i> Open six-field builder
+          </button>
+        </div>
+        <div id="cron-builder-${r}" class="cron-builder" hidden>
+          <h4>Build a schedule expression</h4>
+          <p class="cron-builder-intro">Choose a field mode for the selected action. The six-field CRON expression is generated automatically.</p>
+          <div class="cron-builder-controls">
+            <label class="cron-builder-label" for="cron-builder-target-${r}">
+              Action
+              <select id="cron-builder-target-${r}" class="cron-builder-select" onchange="loadCronBuilder(${r})">
+                <option value="on">Turn ON</option>
+                <option value="off">Turn OFF</option>
+              </select>
+            </label>
+            <div class="cron-builder-label">
+              Field order
+              <div class="cron-help">Second · minute · hour · day-of-month · month · day-of-week</div>
+            </div>
+          </div>
+          <div id="cron-builder-fields-${r}"></div>
+          <div class="cron-builder-preview" id="cron-builder-preview-${r}">Expression preview: --</div>
+          <div class="cron-actions">
+            <button class="cron-action primary" type="button" onclick="applyCronBuilder(${r})"><i class="fas fa-check"></i> Apply to selected action</button>
+            <button class="cron-action" type="button" onclick="loadCronBuilder(${r})"><i class="fas fa-rotate"></i> Reload current</button>
+          </div>
+        </div>
+        <div class="cron-raw-settings">
+          <div class="cron-help"><strong>Manual CRON output</strong></div>
+          <div class="cron-advanced-body">
+            <label class="cron-field" for="cron-on-${r}">
+              CRON ON expression
+                <input id="cron-on-${r}" class="cron-input" type="text" spellcheck="false" oninput="markManualCronEdit(${r})"
+                placeholder="0 0 6 * * 1-5">
+            </label>
+            <label class="cron-field" for="cron-off-${r}">
+              CRON OFF expression
+                <input id="cron-off-${r}" class="cron-input" type="text" spellcheck="false" oninput="markManualCronEdit(${r})"
+                placeholder="0 30 6 * * 1-5">
+            </label>
+            <p class="cron-help"><strong>Supported:</strong> wildcard, value, comma list, range, step, and custom field expressions.</p>
+          </div>
+        </div>
+          </div>
+        </details>
+        <div class="cron-presets" aria-label="Quick presets">
+          <label class="cron-builder-label" for="cron-preset-${r}">
+            Quick Presets
+            <select id="cron-preset-${r}" class="cron-builder-select" onchange="applyPreset(${r})">
+              <option value="custom">-- Manual Configuration --</option>
+              <option value="7pm-9pm-alt">7 PM - 9 PM (15m ON / 45m OFF)</option>
+              <option value="hourly-15m">Every Hour (First 15 mins ON)</option>
+              <option value="hourly-15m-offset">Every Hour (15th–30th minute ON)</option>
+              <option value="nightly-run">Nightly Window (2 AM ON / 4 AM OFF)</option>
+              <option value="test-2s">2-second ON/OFF test</option>
+              <option value="test-5s">5-second ON/OFF test</option>
+              <option value="weekday">Weekdays (6 AM - 6:30 AM)</option>
+            </select>
+          </label>
+        </div>
+        <div class="cron-actions">
+          <button class="cron-action primary" type="button" onclick="saveCronSchedule(${r})"><i class="fas fa-save"></i> Save Schedule</button>
+          <button id="cron-toggle-${r}" class="cron-action danger" type="button" onclick="toggleCronSchedule(${r})"><i class="fas fa-ban"></i> <span>Disable</span></button>
+        </div>
+        <div class="cron-current" id="cron-current-${r}">Waiting for hub profile...</div>
+      `;
+      document.getElementById('schedules').appendChild(card);
+    }
+
+    // Track current schedule type for each relay
+    let scheduleTypes = {1: 'time', 2: 'time', 3: 'time', 4: 'time'};
+
+    function switchScheduleType(relayNum, type) {
+      scheduleTypes[relayNum] = type;
+      
+      // Update button styles
+      const buttons = document.querySelectorAll(`.schedule-type-btn[data-relay="${relayNum}"]`);
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+      });
+      
+      // Show/hide inputs
+      document.getElementById(`time-range-inputs-${relayNum}`).style.display = type === 'time' ? 'block' : 'none';
+      document.getElementById(`interval-inputs-${relayNum}`).style.display = type === 'interval' ? 'block' : 'none';
+    }
+
+    // Debug functions
+    function toggleDebug() {
+      const debugContent = document.getElementById('debug-content');
+      debugContent.style.display = debugContent.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function updateDebugInfo(data) {
+      const debugContent = document.getElementById('debug-content');
+      const now = new Date().toLocaleTimeString();
+      debugContent.innerHTML = `
+        <div><strong>Last update:</strong> ${now}</div>
+        <div><strong>Raw JSON:</strong> ${JSON.stringify(data)}</div>
+        <div><strong>Soil Moisture Value:</strong> ${data.soilMoisture !== undefined ? data.soilMoisture : 'MISSING'}</div>
+        <div><strong>Temperature:</strong> ${data.temp}</div>
+        <div><strong>Humidity:</strong> ${data.hum}</div>
+        <div><strong>Light:</strong> ${data.ldr}</div>
+      `;
+    }
+
+    // Function to start editing a relay name
+    function startEdit(relayNum) {
+      // Hide all other edit forms first
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`edit-form-${i}`).style.display = 'none';
+      }
+      
+      const form = document.getElementById(`edit-form-${relayNum}`);
+      const input = document.getElementById(`edit-input-${relayNum}`);
+      const currentName = document.getElementById(`relay${relayNum}-name`).textContent;
+      
+      input.value = currentName;
+      form.style.display = 'block';
+      input.focus();
+    }
+
+    // Function to save edited relay name
+    function saveEdit(relayNum) {
+      const input = document.getElementById(`edit-input-${relayNum}`);
+      const newName = input.value.trim();
+      
+      if (newName) {
+        // Update the relay name
+        document.getElementById(`relay${relayNum}-name`).textContent = newName;
+        document.getElementById(`schedule-relay${relayNum}-name`).textContent = newName;
+        
+        // Save to localStorage
+        localStorage.setItem(`relay${relayNum}-name`, newName);
+        
+        // Update the relayNames array
+        relayNames[relayNum-1] = newName;
+      }
+      
+      // Hide the edit form
+      document.getElementById(`edit-form-${relayNum}`).style.display = 'none';
+    }
+
+    // Close edit forms when clicking outside
+    document.addEventListener('click', function(e) {
+      for (let i = 1; i <= 4; i++) {
+        const form = document.getElementById(`edit-form-${i}`);
+        if (form.style.display === 'block' && 
+            !form.contains(e.target) && 
+            e.target.id !== `relay${i}-name`) {
+          form.style.display = 'none';
+        }
+      }
+    });
+
+    // Allow pressing Enter to save
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`edit-input-${i}`).addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          saveEdit(i);
+        }
+      });
+    }
+
+    function formatUptime(milliseconds) {
+      const seconds = Math.floor((milliseconds || 0) / 1000);
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${days ? `${days}d ` : ''}${hours}h ${minutes}m`;
+    }
+
+    function updateNetworkStatus(data) {
+      const network = data.network || {};
+      const mode = network.mode || 'connecting';
+      const badge = document.getElementById('network-mode');
+      badge.textContent = mode;
+      badge.className = `mode-badge ${mode}`;
+
+      let summary = 'Connecting to infrastructure Wi-Fi...';
+      if (mode === 'online') {
+        summary = network.mqttConnected
+          ? 'Infrastructure Wi-Fi and ThingsBoard are online'
+          : 'Infrastructure Wi-Fi is online; ThingsBoard is retrying';
+      } else if (mode === 'offline') {
+        summary = 'Offline AP and fixed-channel ESP-NOW receiver are active';
+      }
+      document.getElementById('network-summary').textContent = summary;
+      document.getElementById('network-ip').textContent = `IP: ${network.ip || '--'}`;
+      document.getElementById('network-channel').textContent = `Channel: ${network.channel ?? '--'}`;
+      document.getElementById('network-cloud').textContent = `Cloud: ${network.mqttConnected ? 'connected' : 'disconnected'}`;
+      document.getElementById('network-nodes').textContent = `Nodes: ${network.nodeCount || 0}`;
+      document.getElementById('network-uptime').textContent = `Uptime: ${formatUptime(data.uptimeMs)}`;
+      document.getElementById('network-reset').textContent = `Reset: ${data.resetReason || '--'}`;
+    }
+
+    function renderRemoteNodes(nodes) {
+      const grid = document.getElementById('remote-nodes-grid');
+      grid.replaceChildren();
+
+      if (!Array.isArray(nodes) || nodes.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'card remote-node-card';
+        empty.textContent = 'No ESP-NOW sensor readings have been received yet.';
+        grid.appendChild(empty);
+        return;
+      }
+
+      nodes.forEach(node => {
+        const card = document.createElement('article');
+        card.className = `card remote-node-card${node.stale ? ' stale' : ''}`;
+
+        const header = document.createElement('div');
+        header.className = 'remote-node-header';
+        const title = document.createElement('h3');
+        title.textContent = node.deviceId || 'Unknown node';
+        const state = document.createElement('span');
+        state.className = `node-state ${node.stale ? 'stale' : 'live'}`;
+        state.textContent = node.stale ? 'stale' : 'live';
+        header.append(title, state);
+
+        const meta = document.createElement('div');
+        meta.className = 'remote-node-meta';
+        meta.textContent = `${node.mac || 'MAC unknown'} · ${Math.floor((node.ageMs || 0) / 1000)}s ago`;
+
+        const values = document.createElement('div');
+        values.className = 'remote-node-values';
+        const fieldSource = (node.data && Object.keys(node.data).length)
+          ? node.data
+          : node;
+        const entries = Object.entries(fieldSource).filter(([key]) =>
+          !['deviceId', 'timestamp', 'mac', 'lastSeen', 'ageMs', 'stale', 'data'].includes(key));
+        entries.forEach(([key, value]) => {
+          const item = document.createElement('div');
+          item.className = 'remote-node-value';
+          const label = document.createElement('span');
+          label.textContent = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
+          const display = document.createElement('strong');
+          display.textContent = typeof value === 'number'
+            ? Number(value.toFixed(3)).toString()
+            : (typeof value === 'object' ? JSON.stringify(value) : String(value));
+          item.append(label, display);
+          values.appendChild(item);
+        });
+
+        if (entries.length === 0) values.textContent = 'No sensor fields in latest packet.';
+        card.append(header, meta, values);
+        grid.appendChild(card);
+      });
+    }
+
+    async function fetchData() {
+      try {
+        const res = await fetch('/data');
+        if (!res.ok) throw new Error(`Hub API returned ${res.status}`);
+        const data = await res.json();
+        
+        // Update debug info
+        updateDebugInfo(data);
+        
+        updateNetworkStatus(data);
+        document.getElementById('temp').innerText = parseFloat(data.temp).toFixed(1) + "°C";
+        document.getElementById('hum').innerText = data.hum + "%";
+        document.getElementById('ldr').innerText = data.ldr + "%";
+        
+        updateRelayDisplay('relay1', data.relay.relay1, 1);
+        updateRelayDisplay('relay2', data.relay.relay2, 2);
+        updateRelayDisplay('relay3', data.relay.relay3, 3);
+        updateRelayDisplay('relay4', data.relay.relay4, 4);
+
+        try {
+          const nodesResponse = await fetch('/api/nodes');
+          if (nodesResponse.ok) renderRemoteNodes(await nodesResponse.json());
+        } catch (nodeError) {
+          console.error('Error fetching remote nodes:', nodeError);
+        }
+      } catch(e) {
+        console.error('Error fetching data:', e);
+        document.getElementById('debug-content').innerHTML += `<div style="color: red;">Error: ${e.message}</div>`;
+      }
+    }
+
+    function updateRelayDisplay(id, state, relayNum) {
+      const el = document.getElementById(id);
+      const statusIndicator = document.getElementById(`status-${relayNum}`);
+      const scheduleStatus = document.getElementById(`cron-schedule-status-${relayNum}`)
+        || document.getElementById(`schedule-status-${relayNum}`);
+      const card = document.getElementById(`relay-card-${relayNum}`);
+      
+      el.innerText = state ? "ON" : "OFF";
+      el.classList.toggle("on", state);
+      el.classList.toggle("off", !state);
+      
+      if (state) {
+        statusIndicator.className = "status-indicator status-on";
+        scheduleStatus.className = "status-indicator status-on";
+        card.classList.add("active");
+      } else {
+        statusIndicator.className = "status-indicator status-off";
+        scheduleStatus.className = "status-indicator status-off";
+        card.classList.remove("active");
+      }
+    }
+
+    async function toggleRelay(relayNum) {
+      try {
+        await fetch('/toggle?relay=' + relayNum);
+        fetchData();
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // ============================================
+    // FIXED DELETE - Uses server's delete endpoint
+    // ============================================
+    
+    async function deleteSchedule(relayNum, scheduleId) {
+        // Confirm deletion
+        if (!confirm(`Delete this schedule for ${relayNames[relayNum-1]}?`)) {
+            return;
+        }
+        
+        // Get all schedules from localStorage
+        let schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+        const arr = schedules[relayNum] || [];
+        
+        // Find the schedule to delete
+        const schedule = arr.find(s => String(s.id) === String(scheduleId));
+        if (!schedule) {
+            alert("Schedule not found!");
+            return;
+        }
+        
+        // Build delete payload with ALL fields for matching
+        const payload = {
+            relay: relayNum,
+            id: parseInt(schedule.id)
+        };
+        
+        // Add all fields that the server uses for matching
+        if (schedule.isInterval) {
+            payload.startHour = schedule.startHourInterval || 0;
+            payload.startMinute = schedule.startMinuteInterval || 0;
+            payload.endHour = schedule.endHourInterval || 0;
+            payload.endMinute = schedule.endMinuteInterval || 0;
+            payload.days = schedule.days;
+            payload.isInterval = true;
+            payload.onMinutes = schedule.onMinutes || 0;
+            payload.offMinutes = schedule.offMinutes || 0;
+        } else {
+            payload.startHour = schedule.startHour || 0;
+            payload.startMinute = schedule.startMinute || 0;
+            payload.endHour = schedule.endHour || 0;
+            payload.endMinute = schedule.endMinute || 0;
+            payload.days = schedule.days;
+            payload.isInterval = false;
+        }
+        
+        console.log("Deleting schedule with payload:", payload);
+        
+        try {
+            // Call the delete endpoint
+            const response = await fetch('/deleteSchedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server returned ${response.status}: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log("Delete response:", result);
+            
+            // Remove from localStorage
+            schedules[relayNum] = arr.filter(s => String(s.id) !== String(scheduleId));
+            localStorage.setItem('relaySchedules', JSON.stringify(schedules));
+            
+            // Re-render
+            renderSchedulesForRelay(relayNum);
+            
+            // Reload from server to sync
+            await loadSchedules();
+            
+        } catch(err) {
+            console.error('Delete failed:', err);
+            alert('Could not delete schedule: ' + err.message);
+            // Reload to restore state
+            await loadSchedules();
+        }
+    }
+
+    // ============================================
+    // RENDER FUNCTION
+    // ============================================
+    
+    function renderSchedulesForRelay(relayNum) {
+        const container = document.getElementById(`schedules-container-${relayNum}`);
+        const schedules = getSchedulesFromStorage(relayNum);
+        
+        if (schedules.length === 0) {
+            container.innerHTML = '<div class="no-schedules">No schedules set</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        schedules.forEach(schedule => {
+            const scheduleElement = document.createElement('div');
+            const isInterval = schedule.isInterval || false;
+            scheduleElement.className = `schedule-item ${isInterval ? 'interval' : ''}`;
+            scheduleElement.dataset.scheduleId = schedule.id;
+            
+            const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            const activeDays = schedule.days
+                .map((active, index) => active ? dayNames[index] : null)
+                .filter(day => day !== null);
+            
+            let timeDisplay = '';
+            let detailDisplay = '';
+            let badgeText = isInterval ? 'Interval' : 'Time Range';
+            let badgeClass = isInterval ? 'badge-interval' : 'badge-time';
+            
+            if (isInterval) {
+                timeDisplay = `${schedule.onMinutes}m ON / ${schedule.offMinutes}m OFF`;
+                const hasWindow = schedule.startHourInterval || schedule.startMinuteInterval || 
+                                 schedule.endHourInterval || schedule.endMinuteInterval;
+                if (hasWindow) {
+                    const start = `${String(schedule.startHourInterval || 0).padStart(2, '0')}:${String(schedule.startMinuteInterval || 0).padStart(2, '0')}`;
+                    const end = `${String(schedule.endHourInterval || 0).padStart(2, '0')}:${String(schedule.endMinuteInterval || 0).padStart(2, '0')}`;
+                    detailDisplay = `Window: ${start} - ${end}`;
+                } else {
+                    detailDisplay = '24/7 operation';
+                }
+            } else {
+                const startTime = `${String(schedule.startHour).padStart(2, '0')}:${String(schedule.startMinute).padStart(2, '0')}`;
+                const endTime = `${String(schedule.endHour).padStart(2, '0')}:${String(schedule.endMinute).padStart(2, '0')}`;
+                timeDisplay = `${startTime} - ${endTime}`;
+                detailDisplay = 'Fixed time range';
+            }
+            
+            scheduleElement.innerHTML = `
+                <div class="schedule-item-header">
+                    <div>
+                        <div class="schedule-item-time">${timeDisplay}</div>
+                        <div style="font-size:0.8rem; color:var(--gray);">
+                            <span class="schedule-badge ${badgeClass}">${badgeText}</span>
+                            ${detailDisplay}
+                        </div>
+                    </div>
+                    <div class="schedule-status ${schedule.enabled ? 'status-on' : 'status-off'}">
+                        ${schedule.enabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                </div>
+                <div class="schedule-item-days">
+                    ${activeDays.map(day => `<span class="day-pill">${day}</span>`).join('')}
+                </div>
+                <div class="schedule-item-actions">
+                    <button class="schedule-item-btn btn-edit" onclick="editSchedule(${schedule.relay}, ${schedule.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="schedule-item-btn btn-delete" onclick="deleteSchedule(${schedule.relay}, ${schedule.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(scheduleElement);
+        });
+    }
+
+    // Build schedule ID like server
+    function buildScheduleIdLikeServer(schedule) {
+      if (schedule.id) return String(schedule.id);
+      const daysMask = (schedule.days || []).map(b => (b ? '1' : '0')).join('');
+      const start = `${String(schedule.startHour).padStart(2,'0')}:${String(schedule.startMinute).padStart(2,'0')}`;
+      const end   = `${String(schedule.endHour).padStart(2,'0')}:${String(schedule.endMinute).padStart(2,'0')}`;
+      return `r${schedule.relay}-${start}-${end}-${daysMask}`;
+    }
+
+    // Function to add a new schedule
+    async function addSchedule(relayNum) {
+      const type = scheduleTypes[relayNum];
+      
+      if (type === 'time') {
+        // Time Range Schedule
+        const startStr = document.getElementById(`start${relayNum}`).value;
+        const endStr = document.getElementById(`end${relayNum}`).value;
+        if(!startStr || !endStr) {
+          alert("Please set both start and end time.");
+          return;
+        }
+        
+        const [startHour, startMinute] = startStr.split(":").map(Number);
+        const [endHour, endMinute] = endStr.split(":").map(Number);
+
+        const days = [];
+        for(let i = 0; i < 7; i++) {
+          days.push(document.getElementById(`day${relayNum}_${i}`).checked);
+        }
+
+        const enabled = document.getElementById(`enabled${relayNum}`).checked;
+
+        const newSchedule = {
+          id: Date.now(),
+          relay: relayNum,
+          isInterval: false,
+          startHour,
+          startMinute,
+          endHour,
+          endMinute,
+          days,
+          enabled
+        };
+
+        // Get existing schedules from server
+        const res = await fetch('/getSchedules');
+        const existingData = await res.json();
+        const existingSchedules = Array.isArray(existingData) ? existingData : [];
+        
+        // Keep schedules for other relays, replace this relay's schedules
+        const otherSchedules = existingSchedules.filter(s => s.relay !== relayNum);
+        const allSchedules = [...otherSchedules, newSchedule];
+        
+        // Send ALL schedules back to server
+        const payload = { relay: allSchedules };
+        
+        const response = await fetch('/setSchedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if(!response.ok) {
+          alert("Failed to save schedule. Please try again.");
+          return;
+        }
+        
+        // Reload from server
+        await loadSchedules();
+        
+      } else {
+        // Interval Schedule
+        const onMinutes = parseInt(document.getElementById(`onMinutes${relayNum}`).value);
+        const offMinutes = parseInt(document.getElementById(`offMinutes${relayNum}`).value);
+        
+        if(!onMinutes || !offMinutes || onMinutes < 1 || offMinutes < 1) {
+          alert("Please set valid ON and OFF minutes (minimum 1 minute each).");
+          return;
+        }
+        
+        const startWindowStr = document.getElementById(`intervalStart${relayNum}`).value;
+        const endWindowStr = document.getElementById(`intervalEnd${relayNum}`).value;
+        
+        let startHourInterval = 0, startMinuteInterval = 0;
+        let endHourInterval = 0, endMinuteInterval = 0;
+        let hasWindow = false;
+        
+        if (startWindowStr && endWindowStr) {
+          const [sh, sm] = startWindowStr.split(":").map(Number);
+          const [eh, em] = endWindowStr.split(":").map(Number);
+          startHourInterval = sh;
+          startMinuteInterval = sm;
+          endHourInterval = eh;
+          endMinuteInterval = em;
+          hasWindow = true;
+        }
+
+        const days = [];
+        for(let i = 0; i < 7; i++) {
+          days.push(document.getElementById(`day${relayNum}_${i}`).checked);
+        }
+
+        const enabled = document.getElementById(`enabled${relayNum}`).checked;
+
+        const newSchedule = {
+          id: Date.now(),
+          relay: relayNum,
+          isInterval: true,
+          onMinutes,
+          offMinutes,
+          startHourInterval: hasWindow ? startHourInterval : 0,
+          startMinuteInterval: hasWindow ? startMinuteInterval : 0,
+          endHourInterval: hasWindow ? endHourInterval : 0,
+          endMinuteInterval: hasWindow ? endMinuteInterval : 0,
+          startHour: hasWindow ? startHourInterval : 0,
+          startMinute: hasWindow ? startMinuteInterval : 0,
+          endHour: hasWindow ? endHourInterval : 0,
+          endMinute: hasWindow ? endMinuteInterval : 0,
+          days,
+          enabled
+        };
+
+        // Get existing schedules from server
+        const res = await fetch('/getSchedules');
+        const existingData = await res.json();
+        const existingSchedules = Array.isArray(existingData) ? existingData : [];
+        
+        // Keep schedules for other relays, replace this relay's schedules
+        const otherSchedules = existingSchedules.filter(s => s.relay !== relayNum);
+        const allSchedules = [...otherSchedules, newSchedule];
+        
+        // Send ALL schedules back to server
+        const payload = { relay: allSchedules };
+        
+        const response = await fetch('/setSchedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if(!response.ok) {
+          alert("Failed to save schedule. Please try again.");
+          return;
+        }
+        
+        // Reload from server
+        await loadSchedules();
+      }
+    }
+
+    // Function to save schedule to localStorage
+    function saveScheduleToStorage(schedule) {
+      let schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      
+      if (!schedules[schedule.relay]) {
+        schedules[schedule.relay] = [];
+      }
+      
+      const existingIndex = schedules[schedule.relay].findIndex(s => s.id === schedule.id);
+      
+      if (existingIndex >= 0) {
+        schedules[schedule.relay][existingIndex] = schedule;
+      } else {
+        schedules[schedule.relay].push(schedule);
+      }
+      
+      localStorage.setItem('relaySchedules', JSON.stringify(schedules));
+    }
+
+    // Function to get schedules from localStorage
+    function getSchedulesFromStorage(relayNum) {
+      const schedules = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      return schedules[relayNum] || [];
+    }
+
+    // Edit schedule
+    function editSchedule(relayNum, scheduleId) {
+      const schedules = getSchedulesFromStorage(relayNum);
+      const schedule = schedules.find(s => String(s.id) === String(scheduleId));
+      
+      if (!schedule) return;
+      
+      const isInterval = schedule.isInterval || false;
+      switchScheduleType(relayNum, isInterval ? 'interval' : 'time');
+      
+      if (isInterval) {
+        document.getElementById(`onMinutes${relayNum}`).value = schedule.onMinutes || 15;
+        document.getElementById(`offMinutes${relayNum}`).value = schedule.offMinutes || 45;
+        
+        if (schedule.startHourInterval || schedule.startMinuteInterval || 
+            schedule.endHourInterval || schedule.endMinuteInterval) {
+          document.getElementById(`intervalStart${relayNum}`).value = 
+            `${String(schedule.startHourInterval || 0).padStart(2, '0')}:${String(schedule.startMinuteInterval || 0).padStart(2, '0')}`;
+          document.getElementById(`intervalEnd${relayNum}`).value = 
+            `${String(schedule.endHourInterval || 0).padStart(2, '0')}:${String(schedule.endMinuteInterval || 0).padStart(2, '0')}`;
+        }
+      } else {
+        document.getElementById(`start${relayNum}`).value = 
+          `${String(schedule.startHour).padStart(2, '0')}:${String(schedule.startMinute).padStart(2, '0')}`;
+        document.getElementById(`end${relayNum}`).value = 
+          `${String(schedule.endHour).padStart(2, '0')}:${String(schedule.endMinute).padStart(2, '0')}`;
+      }
+      
+      for(let d = 0; d < 7; d++) {
+        const checkbox = document.getElementById(`day${relayNum}_${d}`);
+        if (checkbox) {
+          checkbox.checked = schedule.days[d] || false;
+        }
+      }
+      
+      const enabledCheckbox = document.getElementById(`enabled${relayNum}`);
+      if (enabledCheckbox) {
+        enabledCheckbox.checked = schedule.enabled !== false;
+      }
+      
+      let all = JSON.parse(localStorage.getItem('relaySchedules') || '{}');
+      all[relayNum] = (all[relayNum] || []).filter(s => String(s.id) !== String(scheduleId));
+      localStorage.setItem('relaySchedules', JSON.stringify(all));
+      renderSchedulesForRelay(relayNum);
+      
+      document.getElementById(`schedules-container-${relayNum}`).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Load schedules from server
+    async function loadSchedules() {
+      try {
+        const res = await fetch('/getSchedules');
+        const data = await res.json();
+        
+        console.log("Received schedule data:", data);
+        
+        const byRelay = { 1: [], 2: [], 3: [], 4: [] };
+        
+        if (Array.isArray(data)) {
+          for (let i = 0; i < data.length; i++) {
+            const schedule = data[i];
+            const relayNum = schedule.relay;
+            
+            if (relayNum >= 1 && relayNum <= 4) {
+              schedule.id = schedule.id || buildScheduleIdLikeServer(schedule);
+              schedule.isInterval = schedule.isInterval || false;
+              byRelay[relayNum].push(schedule);
+            }
+          }
+        } else {
+          console.error("Expected array but got:", typeof data);
+        }
+
+        localStorage.setItem('relaySchedules', JSON.stringify(byRelay));
+        
+        for (let r = 1; r <= 4; r++) {
+          renderSchedulesForRelay(r);
+        }
+      } catch(e) {
+        console.error("Failed to load schedules", e);
+        try {
+          const res = await fetch('/getSchedules');
+          const text = await res.text();
+          console.error("Raw response:", text);
+        } catch (err) {
+          console.error("Couldn't get raw response:", err);
+        }
+      }
+    }
+
+    // ============================================
+    // CRON profile UI and command receiver
+    // ============================================
+
+    const CRON_PRESETS = {
+      test1s: {
+        enabled: true,
+        hasSecondsPrecision: true,
+        cronOn: '*/2 * * * * *',
+        cronOff: '1-59/2 * * * * *'
+      },
+      'test-2s': {
+        enabled: true,
+        hasSecondsPrecision: true,
+        cronOn: '*/4 * * * * *',
+        cronOff: '2-59/4 * * * * *'
+      },
+      'test-5s': {
+        enabled: true,
+        hasSecondsPrecision: true,
+        cronOn: '*/10 * * * * *',
+        cronOff: '5-59/10 * * * * *'
+      },
+      '7pm-9pm-alt': {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 0-14 19-20 * * *',
+        cronOff: '0 15-59 19-20 * * *'
+      },
+      'hourly-15m': {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 */60 * * * *',
+        cronOff: '0 15-59/60 * * * *'
+      },
+      'hourly-15m-offset': {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 15 * * * *',
+        cronOff: '0 30 * * * *'
+      },
+      'nightly-run': {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 0 2 * * *',
+        cronOff: '0 0 4 * * *'
+      },
+      weekday: {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 0 6 * * 1-5',
+        cronOff: '0 30 6 * * 1-5'
+      },
+      normalDay: {
+        enabled: true,
+        hasSecondsPrecision: false,
+        cronOn: '0 0 6 * * *',
+        cronOff: '0 0 21 * * *'
+      }
+    };
+
+    const cronManualEdit = {};
+
+    function easyTimeParts(value) {
+      const match = String(value || '').match(/^(\d{2}):(\d{2})$/);
+      if (!match) throw new Error('Choose both ON and OFF times.');
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      if (hour > 23 || minute > 59) throw new Error('Enter valid 24-hour times.');
+      return { hour, minute };
+    }
+
+    function easyDaysExpression(relayNum) {
+      const selected = [];
+      for (let day = 0; day < 7; day++) {
+        if (document.getElementById(`easy-day-${relayNum}-${day}`).checked) selected.push(day);
+      }
+      if (!selected.length) throw new Error('Select at least one active day.');
+      return selected.length === 7 ? '*' : selected.join(',');
+    }
+
+    function buildEasyCronProfile(relayNum) {
+      const mode = document.getElementById(`easy-mode-${relayNum}`).value;
+      const enabled = document.getElementById(`cron-enabled-input-${relayNum}`).checked;
+
+      if (mode === 'custom') {
+        throw new Error('Custom CRON is configured in Advanced settings below.');
+      }
+
+      if (mode === 'time') {
+        const start = easyTimeParts(document.getElementById(`easy-start-${relayNum}`).value);
+        const end = easyTimeParts(document.getElementById(`easy-end-${relayNum}`).value);
+        const days = easyDaysExpression(relayNum);
+        return {
+          relay: relayNum,
+          enabled,
+          hasSecondsPrecision: false,
+          cronOn: `0 ${start.minute} ${start.hour} * * ${days}`,
+          cronOff: `0 ${end.minute} ${end.hour} * * ${days}`
+        };
+      }
+
+      const onMinutes = Number(document.getElementById(`easy-on-minutes-${relayNum}`).value);
+      const offMinutes = Number(document.getElementById(`easy-off-minutes-${relayNum}`).value);
+      const total = onMinutes + offMinutes;
+      if (!Number.isInteger(onMinutes) || !Number.isInteger(offMinutes) || onMinutes < 1 || offMinutes < 1) {
+        throw new Error('ON and OFF durations must be at least 1 minute.');
+      }
+      if (total > 60) {
+        throw new Error('Easy cycles must total 60 minutes or less; use Advanced CRON for longer cycles.');
+      }
+
+      return {
+        relay: relayNum,
+        enabled,
+        hasSecondsPrecision: false,
+        cronOn: `0 */${total} * * * *`,
+        cronOff: `0 ${onMinutes}-59/${total} * * * *`
+      };
+    }
+
+    function updateEasySchedule(relayNum) {
+      const mode = document.getElementById(`easy-mode-${relayNum}`).value;
+      document.getElementById(`easy-time-${relayNum}`).hidden = mode !== 'time';
+      document.getElementById(`easy-cycle-${relayNum}`).hidden = mode !== 'cycle';
+      document.getElementById(`easy-custom-${relayNum}`).hidden = mode !== 'custom';
+      updateEasyPreview(relayNum);
+    }
+
+    function updateEasyPreview(relayNum) {
+      // The generated expression is shown only in the final current-schedule
+      // display at the bottom of the card.
+    }
+
+    function setEasyCustomState(relayNum) {
+      document.getElementById(`easy-mode-${relayNum}`).value = 'custom';
+      document.getElementById(`easy-start-${relayNum}`).value = '';
+      document.getElementById(`easy-end-${relayNum}`).value = '';
+      document.getElementById(`easy-on-minutes-${relayNum}`).value = '';
+      document.getElementById(`easy-off-minutes-${relayNum}`).value = '';
+      for (let day = 0; day < 7; day++) {
+        document.getElementById(`easy-day-${relayNum}-${day}`).checked = false;
+      }
+      updateEasySchedule(relayNum);
+    }
+
+    function editEasyCron(relayNum) {
+      const mode = document.getElementById(`easy-mode-${relayNum}`).value;
+      cronManualEdit[relayNum] = mode === 'custom';
+      const picker = document.getElementById(`cron-preset-${relayNum}`);
+      if (picker) picker.value = 'custom';
+      updateEasyPreview(relayNum);
+    }
+
+    function markManualCronEdit(relayNum) {
+      cronManualEdit[relayNum] = true;
+      setEasyCustomState(relayNum);
+      const picker = document.getElementById(`cron-preset-${relayNum}`);
+      if (picker) picker.value = 'custom';
+    }
+
+    function setEasyDaysFromExpression(relayNum, expression) {
+      const active = new Set();
+      const value = String(expression || '').trim();
+      if (value === '*') {
+        for (let day = 0; day < 7; day++) active.add(day);
+      } else {
+        value.split(',').forEach(part => {
+          const range = part.split('-').map(Number);
+          if (range.length === 1 && Number.isInteger(range[0])) active.add(range[0]);
+          if (range.length === 2 && Number.isInteger(range[0]) && Number.isInteger(range[1])) {
+            for (let day = range[0]; day <= range[1]; day++) active.add(day);
+          }
+        });
+      }
+      for (let day = 0; day < 7; day++) {
+        document.getElementById(`easy-day-${relayNum}-${day}`).checked = active.has(day);
+      }
+    }
+
+    function syncEasyFormFromCron(relayNum, profile) {
+      const onFields = String(profile.cronOn || '').trim().split(/\s+/);
+      const offFields = String(profile.cronOff || '').trim().split(/\s+/);
+      setEasyCustomState(relayNum);
+      const simpleTime = onFields.length === 6 && offFields.length === 6 &&
+        onFields[0] === '0' && offFields[0] === '0' &&
+        onFields[3] === '*' && offFields[3] === '*' &&
+        onFields[4] === '*' && offFields[4] === '*' &&
+        /^\d+$/.test(onFields[1]) && /^\d+$/.test(onFields[2]) &&
+        /^\d+$/.test(offFields[1]) && /^\d+$/.test(offFields[2]) &&
+        onFields[5] === offFields[5];
+
+      const onCycle = onFields.length === 6 && onFields[0] === '0' &&
+        /^\*\/(\d+)$/.exec(onFields[1]);
+      const offCycle = offFields.length === 6 && offFields[0] === '0' &&
+        /^(\d+)-59\/(\d+)$/.exec(offFields[1]);
+      const simpleCycle = Boolean(onCycle && offCycle &&
+        onFields[2] === '*' && onFields[3] === '*' && onFields[4] === '*' && onFields[5] === '*' &&
+        offFields[2] === '*' && offFields[3] === '*' && offFields[4] === '*' && offFields[5] === '*' &&
+        Number(onCycle[1]) === Number(offCycle[2]) &&
+        Number(offCycle[1]) > 0 && Number(offCycle[1]) < Number(onCycle[1]) &&
+        Number(onCycle[1]) <= 60);
+
+      if (simpleTime) {
+        cronManualEdit[relayNum] = false;
+        document.getElementById(`easy-mode-${relayNum}`).value = 'time';
+        document.getElementById(`easy-start-${relayNum}`).value = `${String(onFields[2]).padStart(2, '0')}:${String(onFields[1]).padStart(2, '0')}`;
+        document.getElementById(`easy-end-${relayNum}`).value = `${String(offFields[2]).padStart(2, '0')}:${String(offFields[1]).padStart(2, '0')}`;
+        setEasyDaysFromExpression(relayNum, onFields[5]);
+      } else if (simpleCycle) {
+        cronManualEdit[relayNum] = false;
+        document.getElementById(`easy-mode-${relayNum}`).value = 'cycle';
+        document.getElementById(`easy-on-minutes-${relayNum}`).value = Number(offCycle[1]);
+        document.getElementById(`easy-off-minutes-${relayNum}`).value = Number(onCycle[1]) - Number(offCycle[1]);
+        setEasyDaysFromExpression(relayNum, '*');
+      } else {
+        cronManualEdit[relayNum] = true;
+      }
+
+      updateEasySchedule(relayNum);
+    }
+
+    const CRON_FIELD_RANGES = [
+      [0, 59], [0, 59], [0, 23], [1, 31], [1, 12], [0, 6]
+    ];
+
+    function validateCronFieldClient(field, min, max) {
+      const value = String(field || '').trim();
+      if (!value) return 'empty field';
+
+      for (const rawPart of value.split(',')) {
+        const part = rawPart.trim();
+        if (!part) return 'empty list item';
+
+        const stepParts = part.split('/');
+        if (stepParts.length > 2) return `invalid step: ${part}`;
+
+        const base = stepParts[0];
+        if (stepParts.length === 2) {
+          const step = Number(stepParts[1]);
+          if (!Number.isInteger(step) || step < 1) return `invalid step: ${part}`;
+        }
+
+        if (base === '*' || base === '?') continue;
+
+        const range = base.split('-');
+        if (range.length > 2) return `invalid range: ${part}`;
+        if (!range.every(item => /^\d+$/.test(item))) return `invalid value: ${part}`;
+
+        const start = Number(range[0]);
+        const end = range.length === 2 ? Number(range[1]) : start;
+        if (start < min || end > max || start > end) return `out of range: ${part}`;
+      }
+
+      return null;
+    }
+
+    function validateCronExpressionClient(expression) {
+      const fields = String(expression || '').trim().split(/\s+/);
+      if (fields.length !== 6) {
+        return { ok: false, error: 'CRON expressions require exactly 6 fields.' };
+      }
+
+      for (let i = 0; i < fields.length; i++) {
+        const error = validateCronFieldClient(fields[i], CRON_FIELD_RANGES[i][0], CRON_FIELD_RANGES[i][1]);
+        if (error) {
+          return { ok: false, error: `Field ${i + 1}: ${error}.` };
+        }
+      }
+
+      return { ok: true, value: fields.join(' ') };
+    }
+
+    function defaultCronProfile(relayNum) {
+      if (relayNum === 1) return { relay: 1, ...CRON_PRESETS.weekday };
+      if (relayNum === 3) {
+        return {
+          relay: 3,
+          enabled: true,
+          hasSecondsPrecision: false,
+          cronOn: '0 0 0 * * *',
+          cronOff: '0 15 0 * * *'
+        };
+      }
+      return { relay: relayNum, ...CRON_PRESETS.normalDay };
+    }
+
+    function normaliseCronProfile(profile, relayNum) {
+      const fallback = defaultCronProfile(relayNum);
+      return {
+        relay: relayNum,
+        enabled: profile ? profile.enabled !== false : fallback.enabled !== false,
+        hasSecondsPrecision: Boolean(profile && profile.hasSecondsPrecision),
+        cronOn: String((profile && profile.cronOn) || fallback.cronOn).trim(),
+        cronOff: String((profile && profile.cronOff) || fallback.cronOff).trim()
+      };
+    }
+
+    function setCronFormValues(relayNum, profile) {
+      const value = normaliseCronProfile(profile, relayNum);
+      document.getElementById(`cron-enabled-input-${relayNum}`).checked = value.enabled;
+      updateCronToggleButton(relayNum, value.enabled);
+      document.getElementById(`cron-seconds-input-${relayNum}`).checked = value.hasSecondsPrecision;
+      document.getElementById(`cron-on-${relayNum}`).value = value.cronOn;
+      document.getElementById(`cron-off-${relayNum}`).value = value.cronOff;
+      syncEasyFormFromCron(relayNum, value);
+      const builder = document.getElementById(`cron-builder-${relayNum}`);
+      if (builder && !builder.hidden) loadCronBuilder(relayNum);
+    }
+
+    function getCronFormValues(relayNum) {
+      return {
+        relay: relayNum,
+        enabled: document.getElementById(`cron-enabled-input-${relayNum}`).checked,
+        hasSecondsPrecision: document.getElementById(`cron-seconds-input-${relayNum}`).checked,
+        cronOn: document.getElementById(`cron-on-${relayNum}`).value.trim(),
+        cronOff: document.getElementById(`cron-off-${relayNum}`).value.trim()
+      };
+    }
+
+    const CRON_BUILDER_FIELDS = [
+      { label: 'Second', hint: '0-59' },
+      { label: 'Minute', hint: '0-59' },
+      { label: 'Hour', hint: '0-23' },
+      { label: 'Day of month', hint: '1-31' },
+      { label: 'Month', hint: '1-12' },
+      { label: 'Day of week', hint: '0-6; Sunday=0' }
+    ];
+
+    const CRON_BUILDER_MODES = [
+      ['any', 'Any value'],
+      ['value', 'One value'],
+      ['list', 'List'],
+      ['range', 'Range'],
+      ['step', 'Every / step'],
+      ['custom', 'Custom field']
+    ];
+
+    function createCronBuilderFields(relayNum) {
+      const container = document.getElementById(`cron-builder-fields-${relayNum}`);
+      if (!container || container.childElementCount) return;
+
+      container.innerHTML = CRON_BUILDER_FIELDS.map((field, index) => `
+        <div class="cron-builder-row">
+          <label class="cron-builder-label" for="cron-builder-mode-${relayNum}-${index}">
+            ${field.label}
+            <select id="cron-builder-mode-${relayNum}-${index}" class="cron-builder-select"
+              onchange="updateCronBuilderPreview(${relayNum})">
+              ${CRON_BUILDER_MODES.map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
+            </select>
+          </label>
+          <label class="cron-builder-label" for="cron-builder-value-${relayNum}-${index}">
+            Value
+            <input id="cron-builder-value-${relayNum}-${index}" class="cron-builder-value"
+              type="text" spellcheck="false" placeholder="Not used for Any"
+              oninput="updateCronBuilderPreview(${relayNum})">
+          </label>
+          <small>Allowed: ${field.hint}</small>
+        </div>
+      `).join('');
+    }
+
+    function parseCronFieldForBuilder(field) {
+      const value = String(field || '').trim();
+      if (value === '*' || value === '?') return { mode: 'any', value: '' };
+      if (value.includes(',')) return { mode: 'list', value };
+      if (value.includes('/')) return { mode: 'step', value };
+      if (value.includes('-')) return { mode: 'range', value };
+      if (/^\d+$/.test(value)) return { mode: 'value', value };
+      return { mode: 'custom', value };
+    }
+
+    function setCronBuilderMode(relayNum, index, mode, value) {
+      const modeInput = document.getElementById(`cron-builder-mode-${relayNum}-${index}`);
+      const valueInput = document.getElementById(`cron-builder-value-${relayNum}-${index}`);
+      if (!modeInput || !valueInput) return;
+
+      modeInput.value = mode;
+      valueInput.value = value || '';
+      valueInput.disabled = mode === 'any';
+      valueInput.placeholder = mode === 'any'
+        ? 'Not used for Any'
+        : mode === 'value' ? 'Example: 6'
+        : mode === 'list' ? 'Example: 1,15,30'
+        : mode === 'range' ? 'Example: 1-5'
+        : mode === 'step' ? 'Example: */5 or 1-59/5'
+        : 'Example: 1-5,10-20/2';
+    }
+
+    function loadCronBuilder(relayNum) {
+      createCronBuilderFields(relayNum);
+      const target = document.getElementById(`cron-builder-target-${relayNum}`).value;
+      const expression = document.getElementById(`cron-${target}-${relayNum}`).value.trim();
+      const fields = expression.split(/\s+/);
+      if (fields.length !== 6) {
+        setCronCommandStatus(`Relay ${relayNum}: the selected expression must have 6 fields.`, true);
+        return;
+      }
+
+      fields.forEach((field, index) => {
+        const parsed = parseCronFieldForBuilder(field);
+        setCronBuilderMode(relayNum, index, parsed.mode, parsed.value);
+      });
+      updateCronBuilderPreview(relayNum);
+    }
+
+    function buildCronExpressionFromBuilder(relayNum) {
+      const fields = [];
+      for (let index = 0; index < CRON_FIELD_RANGES.length; index++) {
+        const mode = document.getElementById(`cron-builder-mode-${relayNum}-${index}`).value;
+        const input = document.getElementById(`cron-builder-value-${relayNum}-${index}`);
+        const value = input.value.trim();
+        const range = CRON_FIELD_RANGES[index];
+        let expression = '*';
+
+        if (mode === 'value') expression = value;
+        if (mode === 'list' || mode === 'range' || mode === 'step' || mode === 'custom') expression = value;
+        if (mode === 'range' && !/^\d+-\d+$/.test(value)) {
+          throw new Error(`${CRON_BUILDER_FIELDS[index].label} requires a range like 1-5.`);
+        }
+        if (mode === 'step' && !value.includes('/')) {
+          throw new Error(`${CRON_BUILDER_FIELDS[index].label} requires a step like */5.`);
+        }
+        if (mode === 'list' && !value.includes(',')) {
+          throw new Error(`${CRON_BUILDER_FIELDS[index].label} requires a comma-separated list.`);
+        }
+
+        const error = validateCronFieldClient(expression, range[0], range[1]);
+        if (error) throw new Error(`${CRON_BUILDER_FIELDS[index].label}: ${error}.`);
+        fields.push(expression);
+      }
+      return fields.join(' ');
+    }
+
+    function updateCronBuilderPreview(relayNum) {
+      const preview = document.getElementById(`cron-builder-preview-${relayNum}`);
+      if (!preview) return;
+      try {
+        preview.textContent = `Expression preview: ${buildCronExpressionFromBuilder(relayNum)}`;
+        preview.style.color = 'var(--dark)';
+      } catch (error) {
+        preview.textContent = `Expression preview: ${error.message}`;
+        preview.style.color = 'var(--danger)';
+      }
+    }
+
+    function toggleCronBuilder(relayNum) {
+      const builder = document.getElementById(`cron-builder-${relayNum}`);
+      if (!builder) return;
+      builder.hidden = !builder.hidden;
+      if (!builder.hidden) loadCronBuilder(relayNum);
+    }
+
+    function applyCronBuilder(relayNum) {
+      const target = document.getElementById(`cron-builder-target-${relayNum}`).value;
+      try {
+        const expression = buildCronExpressionFromBuilder(relayNum);
+        document.getElementById(`cron-${target}-${relayNum}`).value = expression;
+        cronManualEdit[relayNum] = true;
+        document.getElementById(`cron-builder-preview-${relayNum}`).textContent =
+          `Expression preview: ${expression}`;
+        setCronCommandStatus(`Friendly builder applied to relay ${relayNum} ${target.toUpperCase()}. Press Save Schedule to store it.`);
+      } catch (error) {
+        setCronCommandStatus(`Relay ${relayNum}: ${error.message}`, true);
+      }
+    }
+
+    function updateCronToggleButton(relayNum, enabled) {
+      const button = document.getElementById(`cron-toggle-${relayNum}`);
+      if (!button) return;
+      button.classList.toggle('danger', enabled);
+      button.classList.toggle('primary', !enabled);
+      button.innerHTML = enabled
+        ? '<i class="fas fa-ban"></i> <span>Disable</span>'
+        : '<i class="fas fa-check"></i> <span>Enable</span>';
+    }
+
+    function setCronCommandStatus(message, isError = false) {
+      const status = document.getElementById('cron-command-status');
+      if (!status) return;
+      status.textContent = message;
+      status.className = `cron-command-status ${isError ? 'error' : 'ok'}`;
+    }
+
+    function renderSchedulesForRelay(relayNum) {
+      const stored = JSON.parse(localStorage.getItem('cronSchedules') || '{}');
+      const profile = normaliseCronProfile(stored[relayNum], relayNum);
+      createCronBuilderFields(relayNum);
+      setCronFormValues(relayNum, profile);
+
+      const enabledChip = document.getElementById(`cron-enabled-${relayNum}`);
+      enabledChip.classList.toggle('active', profile.enabled);
+      enabledChip.innerHTML = `<i class="fas fa-circle"></i> ${profile.enabled ? 'Enabled' : 'Disabled'}`;
+
+      const precisionChip = document.getElementById(`cron-precision-${relayNum}`);
+      precisionChip.classList.toggle('precision', profile.hasSecondsPrecision);
+      precisionChip.innerHTML = `<i class="fas fa-stopwatch"></i> ${profile.hasSecondsPrecision ? 'Second resolution' : 'Minute resolution'}`;
+
+      document.getElementById(`cron-current-${relayNum}`).textContent =
+        `ON: ${profile.cronOn}  |  OFF: ${profile.cronOff}`;
+    }
+
+    async function postCronPayload(payload) {
+      const response = await fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const raw = await response.text();
+      let result = {};
+      try { result = raw ? JSON.parse(raw) : {}; } catch (_) { result = { message: raw }; }
+      if (!response.ok) {
+        throw new Error(result.error || result.message || `Hub returned ${response.status}`);
+      }
+
+      await loadSchedules();
+      return result;
+    }
+
+    async function saveCronSchedule(relayNum) {
+      try {
+        let payload;
+        if (cronManualEdit[relayNum] === true) {
+          payload = getCronFormValues(relayNum);
+        } else {
+          payload = buildEasyCronProfile(relayNum);
+          document.getElementById(`cron-seconds-input-${relayNum}`).checked = false;
+          document.getElementById(`cron-on-${relayNum}`).value = payload.cronOn;
+          document.getElementById(`cron-off-${relayNum}`).value = payload.cronOff;
+        }
+
+        const onValidation = validateCronExpressionClient(payload.cronOn);
+        const offValidation = validateCronExpressionClient(payload.cronOff);
+        if (!onValidation.ok || !offValidation.ok) {
+          const error = onValidation.ok ? offValidation.error : onValidation.error;
+          throw new Error(error);
+        }
+
+        payload.cronOn = onValidation.value;
+        payload.cronOff = offValidation.value;
+        await postCronPayload(payload);
+        setCronCommandStatus(`Relay ${relayNum} schedule saved.`);
+      } catch (error) {
+        console.error('Failed to save schedule:', error);
+        setCronCommandStatus(`Relay ${relayNum}: ${error.message}`, true);
+      }
+    }
+
+    async function toggleCronSchedule(relayNum) {
+      const payload = getCronFormValues(relayNum);
+      payload.enabled = !payload.enabled;
+      try {
+        await postCronPayload(payload);
+        setCronCommandStatus(`Relay ${relayNum} ${payload.enabled ? 'enabled' : 'disabled'}; expressions were preserved.`);
+      } catch (error) {
+        console.error('Failed to toggle schedule:', error);
+        setCronCommandStatus(`Relay ${relayNum}: ${error.message}`, true);
+      }
+    }
+
+    function applyPreset(relayNum) {
+      const picker = document.getElementById(`cron-preset-${relayNum}`);
+      const presetName = picker ? picker.value : 'custom';
+      if (presetName === 'custom') {
+        cronManualEdit[relayNum] = true;
+        setEasyCustomState(relayNum);
+        setCronCommandStatus(`Relay ${relayNum}: manual configuration selected.`);
+        return;
+      }
+      setCronPreset(relayNum, presetName);
+    }
+
+    function setCronPreset(relayNum, presetName) {
+      const preset = CRON_PRESETS[presetName];
+      if (!preset) return;
+      setCronFormValues(relayNum, { relay: relayNum, ...preset });
+      setCronCommandStatus(`Preset loaded for relay ${relayNum}; press Save Schedule to apply.`);
+    }
+
+    function parseCronSetCommand(command) {
+      const match = String(command || '').trim().match(
+        /^CRON\s+SET\s+([1-4])\s+([01])\s+([01])\s+(.+?)\s*\|\s*(.+)$/i
+      );
+      if (!match) {
+        throw new Error('Expected: CRON SET <relay> <enabled> <seconds> <cron-on> | <cron-off>');
+      }
+
+      const relay = Number(match[1]);
+      const on = validateCronExpressionClient(match[4]);
+      const off = validateCronExpressionClient(match[5]);
+      if (!on.ok) throw new Error(`CRON ON: ${on.error}`);
+      if (!off.ok) throw new Error(`CRON OFF: ${off.error}`);
+
+      return {
+        relay,
+        enabled: match[2] === '1',
+        hasSecondsPrecision: match[3] === '1',
+        cronOn: on.value,
+        cronOff: off.value
+      };
+    }
+
+    async function receiveCronSetCommand(command) {
+      try {
+        const payload = parseCronSetCommand(command);
+        await postCronPayload(payload);
+        setCronCommandStatus(`Received and applied CRON SET for relay ${payload.relay}.`);
+        return true;
+      } catch (error) {
+        console.error('CRON SET rejected:', error);
+        setCronCommandStatus(`CRON SET rejected: ${error.message}`, true);
+        return false;
+      }
+    }
+
+    async function submitCronCommand() {
+      const input = document.getElementById('cron-command-input');
+      await receiveCronSetCommand(input ? input.value : '');
+    }
+
+    // Embedded dashboards and parent applications can deliver the new command
+    // without knowing the UI's internal form IDs.
+    window.receiveCronSetCommand = receiveCronSetCommand;
+    window.addEventListener('message', event => {
+      const data = event.data;
+      const command = typeof data === 'string'
+        ? data
+        : (data && (data.command || data.cronSet));
+      if (typeof command === 'string' && /^CRON\s+SET/i.test(command.trim())) {
+        void receiveCronSetCommand(command);
+      }
+    });
+    window.addEventListener('cron-set', event => {
+      const command = event.detail && (event.detail.command || event.detail.cronSet || event.detail);
+      if (typeof command === 'string') void receiveCronSetCommand(command);
+    });
+
+    async function loadSchedules() {
+      try {
+        const response = await fetch('/getSchedules');
+        if (!response.ok) throw new Error(`Hub returned ${response.status}`);
+        const data = await response.json();
+        const profiles = {};
+
+        if (Array.isArray(data)) {
+          data.forEach(profile => {
+            const relayNum = Number(profile && profile.relay);
+            if (relayNum >= 1 && relayNum <= 4) {
+              profiles[relayNum] = normaliseCronProfile(profile, relayNum);
+            }
+          });
+        }
+
+        for (let relayNum = 1; relayNum <= 4; relayNum++) {
+          profiles[relayNum] = profiles[relayNum] || defaultCronProfile(relayNum);
+        }
+
+        localStorage.setItem('cronSchedules', JSON.stringify(profiles));
+        for (let relayNum = 1; relayNum <= 4; relayNum++) renderSchedulesForRelay(relayNum);
+      } catch (error) {
+        console.error('Failed to load CRON profiles:', error);
+        setCronCommandStatus(`Could not load CRON profiles: ${error.message}`, true);
+      }
+    }
+
+    // Timelapse functionality
+    let timelapseImages = [];
+    let currentTimelapseIndex = 0;
+    let isTimelapsePlaying = false;
+    let timelapseInterval;
+    let timelapseTransitionSpeed = 2000;
+    let timelapseProgressInterval;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('play-pause').addEventListener('click', toggleTimelapsePlayPause);
+      document.getElementById('prev-btn').addEventListener('click', showPreviousTimelapseImage);
+      document.getElementById('next-btn').addEventListener('click', showNextTimelapseImage);
+      document.getElementById('fullscreen-btn').addEventListener('click', toggleTimelapseFullscreen);
+      document.getElementById('view-gallery').addEventListener('click', viewGalleryPage);
+      document.getElementById('refresh-btn').addEventListener('click', loadTimelapseImages);
+      
+      const speedSlider = document.getElementById('speed-slider');
+      const speedValue = document.getElementById('speed-value');
+      
+      speedSlider.addEventListener('input', function() {
+        timelapseTransitionSpeed = (11 - this.value) * 500;
+        speedValue.textContent = (timelapseTransitionSpeed/1000).toFixed(1) + 's';
+        
+        if (isTimelapsePlaying) {
+          clearInterval(timelapseInterval);
+          clearInterval(timelapseProgressInterval);
+          startTimelapsePlayback();
+        }
+      });
+      
+      loadTimelapseImages();
+      
+      for (let r = 1; r <= 4; r++) {
+        renderSchedulesForRelay(r);
+      }
+    });
+    
+    async function loadTimelapseImages() {
+      const container = document.getElementById('timelapse-container');
+      const loading = document.getElementById('timelapse-loading');
+      
+      try {
+        loading.style.display = 'block';
+        container.innerHTML = '<div class="timelapse-loading" id="timelapse-loading"><i class="fas fa-spinner"></i> Loading timelapse images...</div>';
+        
+        const response = await fetch(`${SERVER_BASE_URL}/gallery`);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        const imageRegex = /<img src="(\/images\/[^"]+)"[^>]*>/g;
+        const nameRegex = /<p>([^<]+)<\/p>/g;
+        
+        let match;
+        const imageUrls = [];
+        const imageNames = [];
+        
+        while ((match = imageRegex.exec(html)) !== null) {
+          imageUrls.push(match[1]);
+        }
+        
+        while ((match = nameRegex.exec(html)) !== null) {
+          imageNames.push(match[1]);
+        }
+        
+        if (imageUrls.length === 0) {
+          throw new Error("No images found in gallery");
+        }
+        
+        timelapseImages = [];
+        for (let i = 0; i < imageUrls.length; i++) {
+          timelapseImages.push({
+            url: `${SERVER_BASE_URL}${imageUrls[i]}`,
+            filename: imageNames[i] || `Image ${i+1}`
+          });
+        }
+        
+        document.getElementById('total-images').textContent = timelapseImages.length;
+        
+        container.innerHTML = '';
+        timelapseImages.forEach((image, index) => {
+          const slide = document.createElement('div');
+          slide.className = 'timelapse-slide';
+          slide.style.backgroundImage = `url('${image.url}')`;
+          if (index === 0) slide.classList.add('active');
+          container.appendChild(slide);
+        });
+        
+        showTimelapseImage(0);
+        toggleTimelapsePlayPause();
+        
+      } catch (err) {
+        console.error("Error loading images:", err);
+        container.innerHTML = `
+          <div class="timelapse-error">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <h3>Error loading images</h3>
+            <p>${err.message || 'Please check if the server is running'}</p>
+            <p>Try accessing <a href="${SERVER_BASE_URL}/gallery" target="_blank" style="color: white;">${SERVER_BASE_URL}/gallery</a> directly</p>
+          </div>
+        `;
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+    
+    function showTimelapseImage(index) {
+      if (index < 0) index = timelapseImages.length - 1;
+      if (index >= timelapseImages.length) index = 0;
+      
+      currentTimelapseIndex = index;
+      
+      const slides = document.querySelectorAll('.timelapse-slide');
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+      
+      document.getElementById('current-index').textContent = index + 1;
+      document.getElementById('current-filename').textContent = timelapseImages[index].filename;
+      
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = '0%';
+    }
+    
+    function showNextTimelapseImage() {
+      showTimelapseImage(currentTimelapseIndex + 1);
+    }
+    
+    function showPreviousTimelapseImage() {
+      showTimelapseImage(currentTimelapseIndex - 1);
+    }
+    
+    function toggleTimelapsePlayPause() {
+      const playPauseBtn = document.getElementById('play-pause');
+      
+      if (isTimelapsePlaying) {
+        clearInterval(timelapseInterval);
+        clearInterval(timelapseProgressInterval);
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i> Play';
+      } else {
+        startTimelapsePlayback();
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+      }
+      
+      isTimelapsePlaying = !isTimelapsePlaying;
+    }
+    
+    function startTimelapsePlayback() {
+      clearInterval(timelapseInterval);
+      clearInterval(timelapseProgressInterval);
+      
+      timelapseInterval = setInterval(showNextTimelapseImage, timelapseTransitionSpeed);
+      
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = '0%';
+      
+      const startTime = Date.now();
+      timelapseProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(100, (elapsed / timelapseTransitionSpeed) * 100);
+        progressBar.style.width = `${progress}%`;
+        
+        if (progress >= 100) {
+          clearInterval(timelapseProgressInterval);
+        }
+      }, 50);
+    }
+    
+    function toggleTimelapseFullscreen() {
+      const container = document.querySelector('.timelapse-container');
+      
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+    
+    function viewGalleryPage() {
+      window.open(`${SERVER_BASE_URL}/gallery`, '_blank');
+    }
+    
+    document.addEventListener('fullscreenchange', updateTimelapseFullscreenStyles);
+    document.addEventListener('webkitfullscreenchange', updateTimelapseFullscreenStyles);
+    document.addEventListener('msfullscreenchange', updateTimelapseFullscreenStyles);
+    
+    function updateTimelapseFullscreenStyles() {}
+    
+    document.addEventListener('keydown', function(e) {
+      const isEditing = Array.from({length: 4}).some((_, i) => 
+        document.getElementById(`edit-form-${i+1}`).style.display === 'block'
+      );
+      
+      if (isEditing) return;
+      
+      switch(e.key) {
+        case 'ArrowLeft':
+          showPreviousTimelapseImage();
+          break;
+        case 'ArrowRight':
+          showNextTimelapseImage();
+          break;
+        case ' ':
+          if (document.activeElement.tagName !== 'BUTTON') {
+            toggleTimelapsePlayPause();
+            e.preventDefault();
+          }
+          break;
+      }
+    });
+
+    // Initialize the dashboard
+    setInterval(fetchData, 2000);
+    fetchData();
+    loadSchedules();
+  </script>
+</body>
+</html>

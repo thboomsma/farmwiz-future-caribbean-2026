@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>FarmWiz Local Dashboard</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0d1411;
+      color: white;
+    }
+
+    header {
+      background: #17231d;
+      padding: 22px;
+      border-bottom: 1px solid #2c4135;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #91a99a;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .gateway {
+      background: #17231d;
+      border: 1px solid #2c4135;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .online {
+      color: #5ee88d;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(
+          auto-fit,
+          minmax(280px, 1fr)
+        );
+
+      gap: 16px;
+    }
+
+    .card {
+      background: #17231d;
+      border: 1px solid #2c4135;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .device-name {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .mac {
+      color: #7f9789;
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+
+    .sensor {
+      display: flex;
+      justify-content: space-between;
+
+      padding: 10px 0;
+
+      border-bottom:
+        1px solid #293a31;
+    }
+
+    .sensor-name {
+      color: #a5b8ad;
+    }
+
+    .sensor-value {
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #71877a;
+    }
+
+    .waiting {
+      background: #17231d;
+
+      border:
+        1px solid #2c4135;
+
+      border-radius: 12px;
+
+      padding: 40px;
+
+      text-align: center;
+
+      color: #81968a;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <h1>FarmWiz</h1>
+
+  <p>
+    Local Sensor Dashboard
+  </p>
+
+</header>
+
+
+<div class="container">
+
+
+  <div class="gateway">
+
+    Gateway:
+
+    <span class="online">
+      ONLINE
+    </span>
+
+    &nbsp; | &nbsp;
+
+    Sensor Nodes:
+
+    <strong id="nodeCount">
+      0
+    </strong>
+
+  </div>
+
+
+  <div
+    id="nodes"
+    class="grid"
+  >
+
+    <div class="waiting">
+
+      Waiting for sensor nodes...
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+// =====================================================
+// FORMAT SENSOR NAME
+// =====================================================
+
+function formatName(name) {
+
+  return name
+
+    .replace(
+      /_/g,
+      " "
+    )
+
+    .replace(
+      /\b\w/g,
+      function(letter) {
+
+        return letter.toUpperCase();
+
+      }
+    );
+}
+
+
+// =====================================================
+// FORMAT VALUE
+// =====================================================
+
+function formatValue(
+  key,
+  value
+) {
+
+  if (
+    typeof value === "number"
+  ) {
+
+    // TDS
+    if (
+      key === "tds_ppm"
+    ) {
+
+      return value.toFixed(1)
+        + " ppm";
+    }
+
+
+    // Voltage
+    if (
+      key.toLowerCase()
+        .includes("voltage")
+    ) {
+
+      return value.toFixed(3)
+        + " V";
+    }
+
+
+    // Temperature
+    if (
+      key.toLowerCase()
+        .includes("temperature")
+      ||
+      key.toLowerCase()
+        === "temp"
+    ) {
+
+      return value.toFixed(1)
+        + " °C";
+    }
+
+
+    // Humidity
+    if (
+      key.toLowerCase()
+        .includes("humidity")
+    ) {
+
+      return value.toFixed(1)
+        + " %";
+    }
+
+
+    // pH
+    if (
+      key.toLowerCase()
+        === "ph"
+    ) {
+
+      return value.toFixed(2);
+    }
+
+  }
+
+  return value;
+}
+
+
+// =====================================================
+// LOAD NODE DATA
+// =====================================================
+
+async function loadNodes() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/nodes"
+      );
+
+
+    const nodes =
+      await response.json();
+
+
+    document
+      .getElementById(
+        "nodeCount"
+      )
+      .textContent =
+        nodes.length;
+
+
+    const container =
+      document
+        .getElementById(
+          "nodes"
+        );
+
+
+    container.innerHTML = "";
+
+
+    // ===============================================
+    // NO NODES
+    // ===============================================
+
+    if (
+      nodes.length === 0
+    ) {
+
+      container.innerHTML =
+        `
+        <div class="waiting">
+          Waiting for sensor nodes...
+        </div>
+        `;
+
+      return;
+    }
+
+
+    // ===============================================
+    // CREATE CARD FOR EACH NODE
+    // ===============================================
+
+    nodes.forEach(
+      function(node) {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "card";
+
+
+        let sensorRows = "";
+
+
+        // ===========================================
+        // SENSOR VALUES
+        // ===========================================
+
+        if (
+          node.data
+        ) {
+
+          Object
+            .entries(
+              node.data
+            )
+            .forEach(
+              function(entry) {
+
+                const key =
+                  entry[0];
+
+                const value =
+                  entry[1];
+
+
+                // Don't display these fields
+
+                if (
+                  key === "deviceId"
+                  ||
+                  key === "timestamp"
+                ) {
+
+                  return;
+                }
+
+
+                sensorRows +=
+                  `
+                  <div class="sensor">
+
+                    <span class="sensor-name">
+
+                      ${formatName(key)}
+
+                    </span>
+
+
+                    <span class="sensor-value">
+
+                      ${formatValue(
+                        key,
+                        value
+                      )}
+
+                    </span>
+
+                  </div>
+                  `;
+
+              }
+            );
+        }
+
+
+        // ===========================================
+        // CARD HTML
+        // ===========================================
+
+        card.innerHTML =
+          `
+          <div class="device-name">
+
+            ${node.deviceId}
+
+          </div>
+
+
+          <div class="mac">
+
+            ${node.mac}
+
+          </div>
+
+
+          ${sensorRows}
+
+
+          <div class="footer">
+
+            Last received at
+            ${Math.round(
+              node.lastSeen / 1000
+            )}
+            sec master uptime
+
+          </div>
+          `;
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+  catch(error) {
+
+    console.log(
+      "Dashboard error:",
+      error
+    );
+
+  }
+
+}
+
+
+// =====================================================
+// FIRST LOAD
+// =====================================================
+
+loadNodes();
+
+
+// =====================================================
+// REFRESH EVERY SECOND
+// =====================================================
+
+setInterval(
+  loadNodes,
+  1000
+);
+
+</script>
+
+
+</body>
+
+</html>
