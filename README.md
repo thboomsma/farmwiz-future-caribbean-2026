@@ -4,6 +4,8 @@
 
 FarmWiz is a smart farming platform being developed in Suriname that combines IoT sensing, real-time monitoring, automation and AI-assisted farm intelligence.
 
+![FarmWiz architecture](./docs/images/farmwiz-architecture.png)
+
 ## Future Caribbean Buildathon 2026
 
 FarmWiz entered Future Caribbean with an existing IoT and automation foundation. During the Buildathon, the team focused on adding an isolated Agentic AI/intelligence layer on top of that foundation. This repository makes that distinction explicit: Phase 1 is documented for later source upload, while Phase 2 contains the completed Buildathon AI application.
