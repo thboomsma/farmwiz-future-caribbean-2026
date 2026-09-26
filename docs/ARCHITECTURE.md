@@ -1,5 +1,7 @@
 # FarmWiz Architecture
 
+![FarmWiz architecture](./images/farmwiz-architecture.png)
+
 ## Phase 1 — Existing foundation
 
 ```text
@@ -30,4 +32,3 @@ Farmer ↔ FarmWiz dashboard ↔ FarmWiz Cloud AI
 ```
 
 The submitted application is isolated from the operational FarmWiz stack. Its tested action lifecycle ends at a mock edge. The source contains narrow, separately guarded ThingsBoard test/alarm methods, but no public claim of live autonomous physical control is made here.
-
