@@ -13,7 +13,7 @@ The hosted FarmWiz demo has private runtime configuration. Public source code co
 
 - **ThingsBoard / FarmWiz telemetry** — device discovery, telemetry keys, latest readings, device status, and bounded historical values through the read-only connector.
 - **Farmer input** — questions, selected farm location, crop selection, and optional plant images.
-- **Crop profiles** — versioned JSON profiles included under `phase-2-agentic-ai/data/crops/`, with AI-researched profiles marked for review.
+- **Crop profiles** — versioned JSON profiles included under `cloud-ai/data/crops/`, with AI-researched profiles marked for review.
 - **Open-Meteo** — current weather and three-day forecast context when valid coordinates are available.
 - **Geocoding service** — location search used to turn a farmer-entered place into coordinates for weather context.
 

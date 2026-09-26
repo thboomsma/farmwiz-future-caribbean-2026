@@ -1,0 +1,8 @@
+{
+  "name": "farmwiz-orchestrator",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "mqtt": "^5.10.4"
+  }
+}

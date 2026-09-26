@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2e8">
+  <title>FarmWiz Commander</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --soil: #f4f2e8;
+      --paper: #fffef9;
+      --forest: #163d2c;
+      --forest-deep: #0d2d20;
+      --leaf: #9bc94b;
+      --leaf-bright: #c5ef73;
+      --gold: #edb84d;
+      --ink: #20382a;
+      --muted: #5e7060;
+      --line: #dfe5d7;
+      --terracotta: #b95b41;
+      --shadow: 0 20px 55px rgba(28, 57, 37, .11);
+      --ease: cubic-bezier(.2,.75,.25,1);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--soil); }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 86% 7%, rgba(197,239,115,.22), transparent 26rem),
+        radial-gradient(ellipse at 5% 74%, rgba(237,184,77,.11), transparent 24rem),
+        var(--soil);
+      font-family: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, textarea, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    .skip-link { position: absolute; z-index: 10; top: 10px; left: -999px; padding: 12px 16px; color: white; background: var(--forest); border-radius: 10px; }
+    .skip-link:focus { left: 12px; }
+    .page { width: min(100% - 28px, 760px); margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 0 max(28px, env(safe-area-inset-bottom)); }
+    .topbar { display: flex; align-items: center; justify-content: space-between; min-height: 54px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--forest); text-decoration: none; }
+    .brand-mark { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 13px 13px 13px 4px; color: var(--forest); background: var(--leaf-bright); box-shadow: 0 5px 14px rgba(100,139,52,.14); }
+    .brand-mark svg { width: 25px; height: 25px; }
+    .brand-name { font-size: 16px; font-weight: 850; letter-spacing: -.045em; }
+    .brand-name span { color: #527a2a; }
+    .edition { margin-left: 3px; padding: 5px 8px; border-radius: 99px; color: #58723e; background: #e6efd5; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .connection { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 650; }
+    .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px rgba(237,184,77,.16); }
+    .connection.ready .connection-dot { background: #71aa42; box-shadow: 0 0 0 4px rgba(113,170,66,.15); }
+    .topbar-actions { position: relative; display: flex; align-items: center; gap: 15px; }
+    .menu-trigger { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 13px; color: var(--forest); background: var(--paper); cursor: pointer; }
+    .menu-trigger:hover, .menu-trigger:focus-visible { outline: 3px solid rgba(155,201,75,.35); }
+    .menu-trigger svg { width: 21px; height: 21px; }
+    .app-menu { position: absolute; z-index: 5; top: calc(100% + 12px); right: 0; width: min(440px, calc(100vw - 32px)); max-height: min(78vh, 720px); overflow: auto; padding: 12px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 18px 50px rgba(22,61,44,.2); }
+    .app-menu[hidden], [hidden] { display: none !important; }
+    .menu-nav { display: grid; gap: 6px; }
+    .menu-item { width: 100%; padding: 13px 14px; border: 0; border-radius: 11px; color: var(--forest); background: #f5f8ef; text-align: left; cursor: pointer; font-size: 13px; font-weight: 750; }
+    .menu-item:hover, .menu-item:focus-visible { outline: 2px solid var(--leaf); }
+    .menu-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 1px 2px 10px; }
+    .menu-panel-head h2 { margin: 0; color: var(--forest); font-size: 15px; }
+    .menu-back { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--forest); background: white; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .app-menu .manage-body { padding: 0; }
+    .app-menu .profile-card { margin-top: 10px; padding: 12px; }
+    .app-menu .profile-head h3 { font-size: 17px; }
+    .app-menu .manage-actions { align-items: flex-start; }
+    #thingsboard-setup { margin: 0; border: 0; }
+    #thingsboard-setup > summary { display: none; }
+    .main-card { overflow: hidden; border: 1px solid rgba(36,76,48,.09); border-radius: 28px; background: var(--paper); box-shadow: var(--shadow); }
+    .intro { padding: 25px 22px 4px; text-align: center; }
+    .eyebrow { margin: 0 0 9px; color: #527229; font-size: 10px; font-weight: 850; letter-spacing: .17em; text-transform: uppercase; }
+    h1 { margin: 0; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 11vw, 52px); font-weight: 400; letter-spacing: -.055em; line-height: 1; }
+    .intro-copy { max-width: 350px; margin: 12px auto 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .voice-area { display: grid; place-items: center; padding: 22px 18px 13px; }
+    .voice-wrap { position: relative; display: grid; place-items: center; width: min(67vw, 258px); aspect-ratio: 1; }
+    .voice-halo { position: absolute; inset: 0; border: 1px solid rgba(123,165,69,.19); border-radius: 50%; transform: scale(.89); }
+    .voice-halo::before, .voice-halo::after { content: ""; position: absolute; inset: 14px; border: 1px solid rgba(123,165,69,.12); border-radius: 50%; }
+    .voice-button {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 76%;
+      aspect-ratio: 1;
+      padding: 18px;
+      border: 0;
+      border-radius: 50%;
+      color: #fffef7;
+      background: radial-gradient(circle at 36% 25%, #376f45, var(--forest) 63%, var(--forest-deep));
+      box-shadow: 0 18px 36px rgba(19,61,42,.27), inset 0 1px 0 rgba(255,255,255,.2);
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      transition: transform .22s var(--ease), background .25s ease, box-shadow .25s ease;
+    }
+    .voice-button:hover { transform: translateY(-2px); box-shadow: 0 22px 42px rgba(19,61,42,.3), inset 0 1px 0 rgba(255,255,255,.2); }
+    .voice-button:focus-visible { outline: 4px solid var(--gold); outline-offset: 6px; }
+    .voice-button:active { transform: scale(.97); }
+    .voice-button[disabled] { cursor: wait; opacity: .75; }
+    .voice-button[data-mode="recording"] { background: radial-gradient(circle at 36% 25%, #4b8e4e, #255b38 68%, #17432a); }
+    .voice-button[data-mode="send"] { color: var(--forest-deep); background: radial-gradient(circle at 35% 25%, #d7f496, var(--leaf) 70%, #78a63a); box-shadow: 0 18px 36px rgba(112,151,58,.28), inset 0 1px 0 rgba(255,255,255,.55); }
+    .voice-button[data-mode="reset"] { color: #fffef7; background: radial-gradient(circle at 36% 25%, #cc815b, var(--terracotta) 70%, #8c3d2c); }
+    .voice-icon { width: 38px; height: 38px; display: grid; place-items: center; }
+    .voice-icon svg { width: 34px; height: 34px; }
+    .voice-label { font-size: 13px; font-weight: 900; letter-spacing: .13em; }
+    .voice-sub { min-height: 15px; color: rgba(255,255,255,.77); font-size: 10px; font-weight: 600; letter-spacing: .025em; }
+    [data-mode="send"] .voice-sub { color: rgba(20,53,31,.72); }
+    .voice-button[data-mode="recording"] .voice-icon { animation: mic-bob .7s ease-in-out infinite alternate; }
+    .voice-button[data-mode="recording"]::after { content: ""; position: absolute; inset: -12px; border: 2px solid rgba(135,184,79,.4); border-radius: 50%; animation: listening 1.45s ease-out infinite; }
+    @keyframes listening { from { transform: scale(.86); opacity: .8; } to { transform: scale(1.13); opacity: 0; } }
+    @keyframes mic-bob { to { transform: translateY(-3px); } }
+    .voice-instruction { max-width: 290px; margin: 0 auto; color: var(--muted); font-size: 12px; line-height: 1.5; text-align: center; }
+    .voice-status { min-height: 20px; margin: 7px auto 0; color: #52742e; font-size: 12px; font-weight: 700; text-align: center; }
+    .composer { margin: 15px 16px 19px; padding: 15px; border: 1px solid var(--line); border-radius: 18px; background: #fafbf5; }
+    .composer label { display: block; margin: 0 0 9px; color: var(--forest); font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+    .composer textarea { display: block; width: 100%; min-height: 75px; max-height: 180px; padding: 0; border: 0; outline: 0; resize: vertical; color: var(--ink); background: transparent; font-size: 16px; line-height: 1.5; }
+    .composer textarea::placeholder { color: #778678; }
+    .composer textarea:focus-visible { outline: 2px solid #9bc94b; outline-offset: 4px; border-radius: 4px; }
+    .composer-foot { display: flex; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px solid #e8eddf; color: #687967; font-size: 10px; }
+    .activity { padding: 20px 17px 18px; border-top: 1px solid #edf0e8; background: linear-gradient(180deg, #fffef9, #fbfcf7); }
+    .activity-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .activity-head h2 { margin: 0; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 400; letter-spacing: -.03em; }
+    .activity-count { color: var(--muted); font-size: 10px; }
+    .activity-log { display: grid; gap: 10px; }
+    .empty-log { padding: 17px 14px; border: 1px dashed #d6dfcc; border-radius: 14px; color: #627365; background: #fafbf7; font-size: 12px; line-height: 1.5; text-align: center; }
+    .log-entry { padding: 14px; border: 1px solid var(--line); border-radius: 15px; background: white; animation: rise-in .34s var(--ease) both; }
+    @keyframes rise-in { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .log-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .log-time { color: #687967; font-size: 10px; }
+    .result-tag { padding: 5px 8px; border-radius: 99px; color: #527534; background: #eff6e3; font-size: 9px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .result-tag.wait { color: #866219; background: #fff4d9; }
+    .result-tag.blocked { color: #984b39; background: #f9e8e1; }
+    .said { margin: 0 0 10px; color: #758173; font-size: 11px; }
+    .said strong { color: var(--ink); font-size: 13px; font-weight: 650; }
+    .call-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .call-item { display: grid; grid-template-columns: 27px 1fr; gap: 9px; align-items: start; padding: 9px; border-radius: 11px; background: #f5f8ef; }
+    .call-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: var(--forest); background: #e2edce; font-size: 14px; }
+    .call-title { color: var(--forest); font-size: 12px; font-weight: 800; }
+    .call-detail { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .entry-note { margin: 10px 0 0; color: #7d6a3d; font-size: 11px; line-height: 1.45; }
+    .entry-note.blocked { color: #984b39; }
+    .manage { margin: 14px 2px 0; border-top: 1px solid #edf0e8; }
+    .manage summary { width: fit-content; padding: 14px 2px 4px; color: #63785b; cursor: pointer; font-size: 12px; font-weight: 750; }
+    .manage-body { padding: 12px 0 4px; }
+    .manage-copy { margin: 0 0 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .device-library { margin: 13px 0 16px; padding: 12px; border: 1px solid #e4eadb; border-radius: 13px; background: #f8faf4; }
+    .device-library-head { display: flex; justify-content: space-between; align-items: center; gap: 9px; margin-bottom: 9px; }
+    .device-library-title { margin: 0; color: var(--forest); font-size: 12px; font-weight: 800; }
+    .device-library-count { color: var(--muted); font-size: 10px; }
+    .device-list { display: grid; gap: 8px; }
+    .device-empty { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .device-card { padding: 10px; border: 1px solid #e7ecdf; border-radius: 10px; background: white; }
+    .device-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .device-name { color: var(--forest); font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
+    .device-state { flex: 0 0 auto; color: #687967; font-size: 9px; font-weight: 750; text-transform: capitalize; }
+    .device-id { margin-top: 3px; color: #687967; font-size: 10px; overflow-wrap: anywhere; }
+    .device-capabilities { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .device-capability { padding: 4px 7px; border-radius: 99px; color: #456539; background: #eef5e5; font-size: 9px; font-weight: 700; }
+    .device-meta { margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .device-actions { display: flex; gap: 7px; margin-top: 9px; }
+    .device-actions button { min-height: 34px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--forest); background: #fafbf7; cursor: pointer; font-size: 10px; font-weight: 750; }
+    .device-actions .delete-device { color: #984b39; }
+    .manage input[type="file"] { display: block; max-width: 100%; color: var(--muted); font-size: 12px; }
+    .manage textarea { display: block; width: 100%; min-height: 130px; margin-top: 10px; padding: 11px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: #fafbf7; font: 11px/1.5 ui-monospace, Consolas, monospace; }
+    .manage textarea:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+    .manage-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .small-button { min-height: 42px; padding: 10px 14px; border: 0; border-radius: 10px; color: white; background: var(--forest); cursor: pointer; font-size: 12px; font-weight: 800; }
+    .small-button:hover, .small-button:focus-visible { background: #245b39; outline: 3px solid rgba(155,201,75,.4); }
+    .small-button:disabled { opacity: .55; cursor: wait; }
+    .reset-button { color: white; background: var(--terracotta); }
+    .reset-button:hover, .reset-button:focus-visible { background: #984b39; }
+    .manage-status { min-height: 18px; margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .profile-card { margin-top: 14px; padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: #fafbf7; }
+    .profile-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .profile-head h3 { margin: 0; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: 20px; font-weight: 400; }
+    .profile-state { padding: 5px 8px; border-radius: 99px; color: #745b25; background: #f6edd6; font-size: 10px; font-weight: 800; }
+    .profile-state.ready { color: #35612b; background: #e7f0dc; }
+    .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+    .profile-field { display: grid; gap: 5px; min-width: 0; }
+    .profile-field[hidden] { display: none; }
+    .profile-field.full { grid-column: 1 / -1; }
+    .profile-field label { color: var(--forest); font-size: 11px; font-weight: 800; }
+    .profile-field input, .profile-field select { width: 100%; min-height: 41px; padding: 9px 10px; border: 1px solid #d6dfcf; border-radius: 9px; color: var(--ink); background: white; font-size: 13px; }
+    .profile-field input:focus-visible, .profile-field select:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+    .profile-help { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .binding-list { display: grid; gap: 9px; margin-top: 10px; }
+    .binding-row { display: grid; grid-template-columns: minmax(120px, .8fr) minmax(0, 1.5fr); align-items: center; gap: 10px; }
+    .binding-label { color: var(--forest); font-size: 11px; font-weight: 750; overflow-wrap: anywhere; }
+    .binding-label small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 500; }
+    .secure-note { padding: 10px 11px; border-left: 3px solid var(--gold); border-radius: 7px; color: #67572e; background: #fff9e9; }
+    @media (max-width: 520px) { .profile-grid { grid-template-columns: 1fr; } .profile-field.full { grid-column: auto; } .binding-row { grid-template-columns: 1fr; gap: 5px; } }
+    .footnote { padding: 14px 5px 0; color: #687967; font-size: 10px; text-align: center; }
+    @media (min-width: 640px) {
+      .page { width: min(100% - 44px, 680px); padding-top: 24px; }
+      .topbar { margin-bottom: 34px; }
+      .main-card { border-radius: 32px; }
+      .intro { padding-top: 32px; }
+      .voice-area { padding-top: 17px; }
+      .composer { margin-right: 28px; margin-left: 28px; padding: 17px 19px; }
+      .activity { padding: 22px 28px 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to Commander</a>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="#main" aria-label="FarmWiz home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 25V13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17C10.8 17 7 13.5 7 8c5.7 0 9 3 9 9Z" fill="currentColor"/><path d="M16 14c0-5.2 3.3-8.7 9-9-.2 5.7-3.5 9-9 9Z" fill="currentColor"/><path d="M10 25h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-name">farm<span>wiz</span></span>
+        <span class="edition">Commander</span>
+      </a>
+      <div class="topbar-actions">
+        <div class="connection" id="connection" aria-live="polite"><span class="connection-dot" aria-hidden="true"></span><span id="connection-label">Checking garden</span></div>
+        <button class="menu-trigger" id="menu-trigger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="app-menu"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <div class="app-menu" id="app-menu" hidden>
+          <nav class="menu-nav" id="menu-nav" aria-label="Settings"><button class="menu-item" id="open-devices" type="button">Device setup</button><button class="menu-item" id="open-cloud" type="button">FarmWiz Cloud</button></nav>
+          <section id="cloud-panel" hidden aria-labelledby="cloud-title">
+            <div class="menu-panel-head"><h2 id="cloud-title">FarmWiz Cloud</h2><button class="menu-back" id="cloud-back" type="button">Back</button></div>
+            <div id="cloud-profile-slot"></div>
+          </section>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="main-card" aria-labelledby="page-title">
+        <div class="intro">
+          <h1 id="page-title">Farmwiz Command</h1>
+        </div>
+
+        <div class="voice-area">
+          <div class="voice-wrap">
+            <div class="voice-halo" aria-hidden="true"></div>
+            <button class="voice-button" id="voice-button" type="button" data-mode="record" aria-label="Hold to speak" aria-pressed="false">
+              <span class="voice-icon" id="voice-icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none"><rect x="11" y="4" width="10" height="17" rx="5" stroke="currentColor" stroke-width="2.3"/><path d="M7.5 15.5v1a8.5 8.5 0 0 0 17 0v-1M16 25v4m-5 0h10" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+              </span>
+              <span class="voice-label" id="voice-label">HOLD TO SPEAK</span>
+              <span class="voice-sub" id="voice-sub">Press and keep holding</span>
+            </button>
+          </div>
+          <p class="voice-instruction" id="voice-instruction">Hold to speak</p>
+          <p class="voice-status" id="voice-status" aria-live="polite"></p>
+        </div>
+
+        <div class="composer">
+          <label for="request-text">Command</label>
+          <textarea id="request-text" rows="2" placeholder="Or type what you need…" autocomplete="off"></textarea>
+          <div class="composer-foot"><span>Enter to send · Shift+Enter for a new line</span><span id="character-count">0</span></div>
+        </div>
+
+        <section class="activity" aria-labelledby="activity-title">
+          <div class="activity-head"><h2 id="activity-title">Recent activity</h2><span class="activity-count" id="activity-count">No requests yet</span></div>
+          <div class="activity-log" id="activity-log" role="log" aria-live="polite" aria-relevant="additions text">
+            <div class="empty-log" id="empty-log">Your requests and their results will appear here.</div>
+          </div>
+        </section>
+      </section>
+
+      <details class="manage">
+        <summary>Set up your devices</summary>
+        <div class="manage-body">
+          <p class="manage-copy">Import a device capability file or edit the saved definitions below. Accepted formats include manifests or definitions with <code>deviceId</code> and <code>capabilities</code>.</p>
+          <section class="device-library" aria-labelledby="device-library-title">
+            <div class="device-library-head"><h2 class="device-library-title" id="device-library-title">Available devices</h2><span class="device-library-count" id="device-library-count">Checking…</span></div>
+            <div class="device-list" id="device-list" aria-live="polite"><p class="device-empty">Loading your saved devices…</p></div>
+          </section>
+          <p class="manage-copy">A full reset clears saved definitions and this Orchestrator's local device list. A later cloud sync, MQTT discovery, or file import can add devices again.</p>
+          <input id="device-json-file" type="file" accept="application/json,.json" aria-label="Choose device list file">
+          <textarea id="device-json" rows="8" spellcheck="false" aria-label="Device list" placeholder="Paste your device list here…"></textarea>
+          <div class="manage-actions"><button class="small-button" id="import-devices" type="button">Save device list</button><button class="small-button reset-button" id="reset-device-data" type="button">Reset local device data</button><span class="manage-status" id="device-import-message" aria-live="polite"></span></div>
+        </div>
+      </details>
+      <details class="manage" id="thingsboard-setup" hidden>
+        <summary>FarmWiz Cloud connection</summary>
+        <div class="manage-body">
+          <p class="manage-copy">The Pi sends typed requests to FarmWiz Cloud. Credentials stay on the Pi.</p>
+          <section class="profile-card" aria-labelledby="tb-profile-title">
+            <div class="profile-head"><h3 id="tb-profile-title">Backend connection</h3><span class="profile-state" id="tb-profile-state">Loading profile</span></div>
+            <div class="profile-grid">
+              <div class="profile-field"><label for="tb-profile-name">Profile name</label><input id="tb-profile-name" maxlength="80" autocomplete="off" value="FarmWiz Cloud"></div>
+              <div class="profile-field"><label for="tb-auth-mode">Authentication</label><select id="tb-auth-mode"><option value="jwt">Username and password</option><option value="api_key">API key</option></select></div>
+              <div class="profile-field full"><label for="tb-base-url">API base URL</label><input id="tb-base-url" type="url" inputmode="url" autocomplete="url" placeholder="https://dash.example.com"></div>
+              <div class="profile-field full" id="tb-api-key-row"><label for="tb-api-key">API key</label><input id="tb-api-key" type="password" autocomplete="new-password" placeholder="Stored on the Pi; leave blank to keep the current key"></div>
+              <div class="profile-field" id="tb-username-row"><label for="tb-username">Username</label><input id="tb-username" type="text" autocomplete="username"></div>
+              <div class="profile-field" id="tb-password-row"><label for="tb-password">Password</label><input id="tb-password" type="password" autocomplete="new-password" placeholder="Leave blank to keep the current password"></div>
+            </div>
+                  <p class="profile-help" id="tb-credential-state">Credentials are saved in the Pi's protected configuration directory and are never returned to this page.</p>
+          </section>
+          <section class="profile-card" aria-labelledby="tb-bindings-title">
+            <div class="profile-head"><h3 id="tb-bindings-title">Device identity bindings</h3></div>
+                  <p class="manage-copy">Map each FarmWiz ID to its Cloud device UUID. This is not the visible device name.</p>
+            <div class="binding-list" id="tb-device-bindings" aria-live="polite"><p class="manage-copy">Loading registered devices…</p></div>
+          </section>
+              <p class="profile-help">Profile name, API URL, auth mode, and device bindings are saved with a SHA-256 integrity hash. This does not encrypt them. Credentials are never stored in browser storage.</p>
+              <p class="profile-help secure-note">Saving and testing credentials requires opening this dashboard over HTTPS. Plain HTTP on the Pi LAN is read-only for this profile.</p>
+          <div class="manage-actions"><button class="small-button" id="tb-profile-save" type="button">Save connection profile</button><button class="small-button" id="tb-profile-test" type="button">Test cloud connection</button><span class="manage-status" id="tb-profile-message" aria-live="polite"></span></div>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <script>
+    const requestText = document.querySelector('#request-text');
+    const voiceButton = document.querySelector('#voice-button');
+    const voiceLabel = document.querySelector('#voice-label');
+    const voiceSub = document.querySelector('#voice-sub');
+    const voiceStatus = document.querySelector('#voice-status');
+    const characterCount = document.querySelector('#character-count');
+    const connection = document.querySelector('#connection');
+    const connectionLabel = document.querySelector('#connection-label');
+    const activityLog = document.querySelector('#activity-log');
+    const emptyLog = document.querySelector('#empty-log');
+    const activityCount = document.querySelector('#activity-count');
+    const deviceJsonFile = document.querySelector('#device-json-file');
+    const deviceJson = document.querySelector('#device-json');
+    const importDevicesButton = document.querySelector('#import-devices');
+    const resetDeviceDataButton = document.querySelector('#reset-device-data');
+    const deviceImportMessage = document.querySelector('#device-import-message');
+    const deviceList = document.querySelector('#device-list');
+    const deviceLibraryCount = document.querySelector('#device-library-count');
+    const tbProfilePanel = document.querySelector('#thingsboard-setup');
+    const menuTrigger = document.querySelector('#menu-trigger');
+    const appMenu = document.querySelector('#app-menu');
+    const menuNav = document.querySelector('#menu-nav');
+    const cloudPanel = document.querySelector('#cloud-panel');
+    const cloudProfileSlot = document.querySelector('#cloud-profile-slot');
+    const deviceSetup = document.querySelector('.manage');
+    const tbProfileName = document.querySelector('#tb-profile-name');
+    const tbAuthMode = document.querySelector('#tb-auth-mode');
+    const tbBaseUrl = document.querySelector('#tb-base-url');
+    const tbApiKey = document.querySelector('#tb-api-key');
+    const tbUsername = document.querySelector('#tb-username');
+    const tbPassword = document.querySelector('#tb-password');
+    const tbApiKeyRow = document.querySelector('#tb-api-key-row');
+    const tbUsernameRow = document.querySelector('#tb-username-row');
+    const tbPasswordRow = document.querySelector('#tb-password-row');
+    const tbProfileState = document.querySelector('#tb-profile-state');
+    const tbCredentialState = document.querySelector('#tb-credential-state');
+    const tbProfileMessage = document.querySelector('#tb-profile-message');
+    const tbBindingsList = document.querySelector('#tb-device-bindings');
+    const tbSaveButton = document.querySelector('#tb-profile-save');
+    const tbTestButton = document.querySelector('#tb-profile-test');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let recording = false;
+    let holdActive = false;
+    let activeMode = 'record';
+    let ignoreNextClick = false;
+    let listenError = '';
+    let editingDeviceId = null;
+    let entryCount = 0;
+    const LOCAL_SETTINGS_KEY = 'farmwiz.commander.settings.v1';
+    let localSettingsSaveTimer = null;
+
+    async function sha256Hex(value) {
+      const bytes = new TextEncoder().encode(value);
+      if (globalThis.crypto?.subtle) {
+        const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+        return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+      }
+      const k = [
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2,
+      ];
+      const bitLength = bytes.length * 8;
+      const paddedLength = Math.ceil((bytes.length + 9) / 64) * 64;
+      const padded = new Uint8Array(paddedLength);
+      padded.set(bytes);
+      padded[bytes.length] = 0x80;
+      const view = new DataView(padded.buffer);
+      view.setUint32(paddedLength - 8, Math.floor(bitLength / 0x100000000), false);
+      view.setUint32(paddedLength - 4, bitLength >>> 0, false);
+      const state = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+      const rotate = (word, amount) => (word >>> amount) | (word << (32 - amount));
+      for (let offset = 0; offset < paddedLength; offset += 64) {
+        const words = new Uint32Array(64);
+        for (let i = 0; i < 16; i++) words[i] = view.getUint32(offset + i * 4, false);
+        for (let i = 16; i < 64; i++) {
+          const x = words[i - 15], y = words[i - 2];
+          const s0 = rotate(x, 7) ^ rotate(x, 18) ^ (x >>> 3);
+          const s1 = rotate(y, 17) ^ rotate(y, 19) ^ (y >>> 10);
+          words[i] = (words[i - 16] + s0 + words[i - 7] + s1) >>> 0;
+        }
+        let [a,b,c,d,e,f,g,h] = state;
+        for (let i = 0; i < 64; i++) {
+          const sum1 = rotate(e, 6) ^ rotate(e, 11) ^ rotate(e, 25);
+          const choice = (e & f) ^ (~e & g);
+          const temp1 = (h + sum1 + choice + k[i] + words[i]) >>> 0;
+          const sum0 = rotate(a, 2) ^ rotate(a, 13) ^ rotate(a, 22);
+          const majority = (a & b) ^ (a & c) ^ (b & c);
+          const temp2 = (sum0 + majority) >>> 0;
+          h = g; g = f; f = e; e = (d + temp1) >>> 0;
+          d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
+        }
+        [a,b,c,d,e,f,g,h].forEach((word, i) => { state[i] = (state[i] + word) >>> 0; });
+      }
+      return state.map((word) => word.toString(16).padStart(8, '0')).join('');
+    }
+
+    function currentLocalSettings() {
+      let baseUrl = '';
+      try {
+        const parsedBaseUrl = new URL(tbBaseUrl.value.trim());
+        if (!parsedBaseUrl.username && !parsedBaseUrl.password && !parsedBaseUrl.search && !parsedBaseUrl.hash) {
+          baseUrl = parsedBaseUrl.toString();
+        }
+      } catch { /* Do not persist malformed or potentially credential-bearing URLs. */ }
+      const device_bindings = Object.fromEntries([...tbBindingsList.querySelectorAll('.tb-device-binding')]
+        .map((input) => [input.dataset.farmwizId, input.value.trim()])
+        .filter(([, value]) => value)
+        .sort(([left], [right]) => left.localeCompare(right)));
+      return {
+        profile_name: tbProfileName.value.trim() || 'FarmWiz Cloud',
+        base_url: baseUrl,
+        auth_mode: tbAuthMode.value === 'api_key' ? 'api_key' : 'jwt',
+        device_bindings,
+      };
+    }
+
+    async function persistLocalSettings() {
+      const envelope = {
+        version: 1,
+        saved_at: new Date().toISOString(),
+        settings: currentLocalSettings(),
+      };
+      envelope.sha256 = await sha256Hex(JSON.stringify(envelope));
+      localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(envelope));
+      return envelope;
+    }
+
+    async function readLocalSettings() {
+      try {
+        const raw = localStorage.getItem(LOCAL_SETTINGS_KEY);
+        if (!raw) return { settings: null, saved_at: null, error: '' };
+        const record = JSON.parse(raw);
+        if (record?.version !== 1 || !record.settings || typeof record.sha256 !== 'string') throw new Error('invalid settings record');
+        const { sha256, ...envelope } = record;
+        if (await sha256Hex(JSON.stringify(envelope)) !== sha256) throw new Error('settings hash mismatch');
+        return { settings: record.settings, saved_at: record.saved_at || null, error: '' };
+      } catch {
+        return { settings: null, saved_at: null, error: 'Saved browser settings failed the integrity check and were ignored.' };
+      }
+    }
+
+    function scheduleLocalSettingsSave() {
+      clearTimeout(localSettingsSaveTimer);
+      localSettingsSaveTimer = setTimeout(async () => {
+        try {
+          await persistLocalSettings();
+          tbProfileMessage.textContent = 'Settings saved in this browser. Credentials are not stored here.';
+        } catch {
+          tbProfileMessage.textContent = 'Browser storage is unavailable; settings could not be saved locally.';
+        }
+      }, 180);
+    }
+
+    function setMode(mode) {
+      activeMode = mode;
+      voiceButton.dataset.mode = mode;
+      voiceButton.setAttribute('aria-pressed', String(mode === 'recording'));
+      if (mode === 'recording') {
+        voiceLabel.textContent = 'LISTENING';
+        voiceSub.textContent = 'Release when you are done';
+        voiceButton.setAttribute('aria-label', 'Listening. Release to finish');
+      } else if (mode === 'send') {
+        voiceLabel.textContent = 'SEND';
+        voiceSub.textContent = 'Send your request';
+        voiceButton.setAttribute('aria-label', 'Send your request');
+      } else if (mode === 'reset') {
+        voiceLabel.textContent = 'RESET';
+        voiceSub.textContent = 'Start a new request';
+        voiceButton.setAttribute('aria-label', 'Reset and start a new request');
+      } else if (mode === 'processing') {
+        voiceLabel.textContent = 'ONE MOMENT';
+        voiceSub.textContent = 'Preparing your request';
+        voiceButton.setAttribute('aria-label', 'Preparing your request');
+      } else {
+        voiceLabel.textContent = 'HOLD TO SPEAK';
+        voiceSub.textContent = 'Press and keep holding';
+        voiceButton.setAttribute('aria-label', 'Hold to speak');
+      }
+    }
+
+    function syncComposer() {
+      characterCount.textContent = String(requestText.value.length);
+      if (!recording && activeMode !== 'processing') setMode(requestText.value.trim() ? 'send' : activeMode === 'reset' ? 'reset' : 'record');
+    }
+
+    function startListening() {
+      if (!SpeechRecognition) {
+        voiceStatus.textContent = 'Voice input is not available here. Type your request below.';
+        return;
+      }
+      if (recording) return;
+      try {
+        listenError = '';
+        recognition = new SpeechRecognition();
+        recognition.lang = navigator.language || 'en-US';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => {
+          recording = true;
+          requestText.value = '';
+          voiceStatus.textContent = 'Listening…';
+          setMode('recording');
+          syncComposer();
+          if (!holdActive) stopListening();
+        };
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let index = 0; index < event.results.length; index += 1) {
+            transcript += event.results[index][0].transcript;
+          }
+          requestText.value = transcript.trim();
+          characterCount.textContent = String(requestText.value.length);
+        };
+        recognition.onerror = (event) => {
+          recording = false;
+          listenError = event.error === 'not-allowed'
+            ? 'Please allow microphone access, then try again.'
+            : 'Voice input could not start. You can type your request below.';
+          voiceStatus.textContent = listenError;
+          setMode(requestText.value.trim() ? 'send' : 'record');
+        };
+        recognition.onend = () => {
+          recording = false;
+          if (listenError) {
+            voiceStatus.textContent = listenError;
+            listenError = '';
+            setMode(requestText.value.trim() ? 'send' : 'record');
+          } else if (requestText.value.trim()) {
+            voiceStatus.textContent = 'Words captured. Review them, then send.';
+            setMode('send');
+          } else {
+            voiceStatus.textContent = 'No words captured. Try again or type below.';
+            setMode('record');
+          }
+        };
+        voiceStatus.textContent = 'Starting microphone…';
+        recognition.start();
+      } catch {
+        recording = false;
+        voiceStatus.textContent = 'Voice input needs microphone access. You can type your request below.';
+        setMode(requestText.value.trim() ? 'send' : 'record');
+      }
+    }
+
+    function stopListening() {
+      if (recognition && recording) {
+        voiceStatus.textContent = 'Finishing your words…';
+        recognition.stop();
+      }
+    }
+
+    voiceButton.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (activeMode === 'record') {
+        event.preventDefault();
+        holdActive = true;
+        ignoreNextClick = true;
+        startListening();
+      }
+    });
+    voiceButton.addEventListener('pointerup', (event) => {
+      holdActive = false;
+      if (recording) {
+        event.preventDefault();
+        ignoreNextClick = true;
+        stopListening();
+      }
+    });
+    voiceButton.addEventListener('pointercancel', () => { holdActive = false; stopListening(); });
+    voiceButton.addEventListener('keydown', (event) => {
+      if ((event.key === ' ' || event.key === 'Enter') && activeMode === 'record') {
+        event.preventDefault();
+        holdActive = true;
+        ignoreNextClick = true;
+        startListening();
+      }
+    });
+    voiceButton.addEventListener('keyup', (event) => {
+      if (event.key === ' ' || event.key === 'Enter') {
+        holdActive = false;
+        stopListening();
+        setTimeout(() => { ignoreNextClick = false; }, 0);
+      }
+    });
+
+    function friendlyToolName(name, args) {
+      if (name === 'get_hub_status') return ['Check hub status', '◉'];
+      if (name === 'get_sensor_state') return ['Read sensor values', '⌁'];
+      if (name === 'list_nodes') return ['View connected devices', '⌂'];
+      if (name === 'list_schedules') return ['View watering schedule', '◷'];
+      if (name === 'set_relay') {
+        const verb = args.state === 'on' ? 'Turn on' : 'Turn off';
+        return [`${verb} ${args.target_name || `relay ${args.relay}`}`, '✳'];
+      }
+      if (name === 'set_schedule') return ['Update watering schedule', '◷'];
+      return ['Review request', '•'];
+    }
+
+    function userFriendlyReason(reason) {
+      if (!reason) return 'The request could not be matched to a saved device.';
+      if (reason.includes('not present in the current inventory')) return 'That device or part is not in your saved device list. Open “Set up your devices” to update it.';
+      if (reason.includes('ungrounded')) return 'Please include the device name and the part you mean.';
+      if (reason.includes('Unknown tool')) return 'I could not match that request to a supported action.';
+      return reason;
+    }
+
+    function addLogEntry(text, data, failed = false) {
+      if (emptyLog?.isConnected) emptyLog.remove();
+      entryCount += 1;
+      activityCount.textContent = `${entryCount} ${entryCount === 1 ? 'request' : 'requests'}`;
+      const article = document.createElement('article');
+      article.className = 'log-entry';
+      const top = document.createElement('div');
+      top.className = 'log-top';
+      const time = document.createElement('time');
+      time.className = 'log-time';
+      time.dateTime = new Date().toISOString();
+      time.textContent = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date());
+      const tag = document.createElement('span');
+      const status = data?.status || (failed ? 'blocked' : 'ready');
+      const actionUnavailable = status === 'confirmation_required' && data?.adapter === 'not-configured';
+      tag.className = `result-tag ${actionUnavailable || ['blocked', 'refused'].includes(status) || failed ? 'blocked' : status === 'confirmation_required' || status === 'needs_clarification' ? 'wait' : ''}`;
+      const statusLabels = { read_only_ready: 'Ready', confirmation_required: 'Review first', needs_clarification: 'More detail needed', blocked: 'Not available', refused: 'Not understood' };
+      tag.textContent = failed ? 'Could not send' : actionUnavailable ? 'Action unavailable' : statusLabels[status] || 'Ready';
+      top.append(time, tag);
+      article.append(top);
+
+      const said = document.createElement('p');
+      said.className = 'said';
+      const saidLabel = document.createElement('span');
+      saidLabel.textContent = 'You said: ';
+      const saidText = document.createElement('strong');
+      saidText.textContent = text;
+      said.append(saidLabel, saidText);
+      article.append(said);
+
+      const calls = Array.isArray(data?.proposed_calls) ? data.proposed_calls : [];
+      if (calls.length) {
+        const list = document.createElement('ul');
+        list.className = 'call-list';
+        for (const call of calls) {
+          const args = call.arguments || {};
+          const [title, icon] = friendlyToolName(call.name, args);
+          const match = (call.device_tool_matches || [])[0];
+          const deviceName = match?.device_id || args.hub || args.node || '';
+          const relay = match?.relay_output;
+          if (call.name === 'set_relay' && relay?.name) args.target_name = relay.name;
+          const item = document.createElement('li');
+          item.className = 'call-item';
+          const glyph = document.createElement('span');
+          glyph.className = 'call-icon';
+          glyph.setAttribute('aria-hidden', 'true');
+          glyph.textContent = icon;
+          const content = document.createElement('div');
+          const heading = document.createElement('div');
+          heading.className = 'call-title';
+          heading.textContent = call.name === 'set_relay' && relay?.name
+            ? `${args.state === 'on' ? 'Turn on' : 'Turn off'} ${relay.name}`
+            : title;
+          const detail = document.createElement('div');
+          detail.className = 'call-detail';
+          const requestedPart = call.name === 'get_sensor_state' ? args.node
+            : call.name === 'set_schedule' ? args.target
+              : call.name === 'set_relay' ? `Relay ${args.relay}` : '';
+          detail.textContent = [deviceName, requestedPart, args.duration_seconds ? `${args.duration_seconds} seconds` : ''].filter(Boolean).join(' · ');
+          content.append(heading, detail);
+          item.append(glyph, content);
+          list.append(item);
+        }
+        article.append(list);
+      } else {
+        const note = document.createElement('p');
+        note.className = 'call-detail';
+        note.textContent = failed ? 'Check your connection and try again.' : userFriendlyReason(data?.reason);
+        article.append(note);
+      }
+
+      if (status === 'confirmation_required') {
+        const note = document.createElement('p');
+        note.className = `entry-note${actionUnavailable ? ' blocked' : ''}`;
+        note.textContent = actionUnavailable
+          ? 'The action is prepared, but the command connection is not configured yet. Nothing has been changed.'
+          : 'Review this request before continuing. No device has been changed.';
+        article.append(note);
+      } else if (['blocked', 'refused', 'needs_clarification'].includes(status) || failed) {
+        const note = document.createElement('p');
+        note.className = 'entry-note blocked';
+        note.textContent = `${userFriendlyReason(data?.reason)} No device has been changed.`;
+        article.append(note);
+      }
+      activityLog.prepend(article);
+    }
+
+    async function sendRequest() {
+      const text = requestText.value.trim();
+      if (!text) { setMode('record'); requestText.focus(); return; }
+      voiceButton.disabled = true;
+      setMode('processing');
+      voiceStatus.textContent = 'Working on it…';
+      try {
+        const response = await fetch('/v1/interpret', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+        addLogEntry(text, data);
+        voiceStatus.textContent = data.status === 'confirmation_required' && data.adapter === 'not-configured'
+          ? 'The action is prepared, but sending is not available yet. Nothing has been changed.'
+          : data.status === 'confirmation_required'
+            ? 'Review the activity below. Nothing has been changed.'
+          : data.status === 'read_only_ready' ? 'Your request is ready.' : userFriendlyReason(data.reason);
+        setMode('reset');
+      } catch (error) {
+        addLogEntry(text, { reason: error.message }, true);
+        voiceStatus.textContent = 'That did not go through. Please try again.';
+        setMode('reset');
+      } finally { voiceButton.disabled = false; }
+    }
+
+    function resetRequest() {
+      requestText.value = '';
+      characterCount.textContent = '0';
+      voiceStatus.textContent = 'Ready when you are.';
+      setMode('record');
+      voiceButton.focus();
+    }
+
+    voiceButton.addEventListener('click', (event) => {
+      if (ignoreNextClick) { ignoreNextClick = false; event.preventDefault(); return; }
+      if (activeMode === 'send') sendRequest();
+      else if (activeMode === 'reset') resetRequest();
+    });
+    requestText.addEventListener('input', () => {
+      voiceStatus.textContent = '';
+      syncComposer();
+    });
+    requestText.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        if (!voiceButton.disabled) sendRequest();
+      }
+    });
+
+    deviceJsonFile.addEventListener('change', async () => {
+      const file = deviceJsonFile.files?.[0];
+      if (!file) return;
+      if (file.size > 80 * 1024) { deviceImportMessage.textContent = 'Choose a device file smaller than 80 KB.'; return; }
+      deviceJson.value = await file.text();
+      deviceImportMessage.textContent = 'Device list loaded. Review it, then save.';
+    });
+
+    function capabilityLabels(device) {
+      const capabilities = device.capabilities || {};
+      const labels = [];
+      for (const tool of capabilities.httpTools || []) if (tool?.name) labels.push(String(tool.name));
+      for (const tool of capabilities.mqttTools || []) if (typeof tool === 'string') labels.push(tool);
+      for (const relay of capabilities.relayOutputs || capabilities.relays || []) {
+        const label = relay?.name || (relay?.relay ? `Relay ${relay.relay}` : relay?.id ? `Relay ${relay.id}` : '');
+        if (label) labels.push(String(label));
+      }
+      if (capabilities.schedule?.supported) labels.push('Schedules');
+      return [...new Set(labels)];
+    }
+
+    function renderDeviceLibrary(nodes) {
+      deviceList.replaceChildren();
+      const devices = Array.isArray(nodes) ? nodes : [];
+      deviceLibraryCount.textContent = `${devices.length} ${devices.length === 1 ? 'device' : 'devices'}`;
+      if (!devices.length) {
+        const empty = document.createElement('p');
+        empty.className = 'device-empty';
+        empty.textContent = 'No devices have been saved yet. Import a device list below to get started.';
+        deviceList.append(empty);
+        return;
+      }
+      for (const device of devices) {
+        const card = document.createElement('article');
+        card.className = 'device-card';
+        const head = document.createElement('div');
+        head.className = 'device-card-head';
+        const name = document.createElement('span');
+        name.className = 'device-name';
+        name.textContent = device.node_name || device.deviceId || device.node_uid || 'Unnamed device';
+        const state = document.createElement('span');
+        state.className = 'device-state';
+        state.textContent = String(device.status || 'saved').replaceAll('_', ' ').toLowerCase();
+        head.append(name, state);
+        card.append(head);
+        const id = document.createElement('div');
+        id.className = 'device-id';
+        id.textContent = device.node_uid || device.deviceId || '';
+        card.append(id);
+        const labels = capabilityLabels(device);
+        if (labels.length) {
+          const badges = document.createElement('div');
+          badges.className = 'device-capabilities';
+          for (const label of labels) {
+            const badge = document.createElement('span');
+            badge.className = 'device-capability';
+            badge.textContent = label;
+            badges.append(badge);
+          }
+          card.append(badges);
+        } else {
+          const noCapabilities = document.createElement('div');
+          noCapabilities.className = 'device-meta';
+          noCapabilities.textContent = 'No controls or capabilities are listed.';
+          card.append(noCapabilities);
+        }
+        const meta = [device.hub_id ? `Hub: ${device.hub_id}` : '', ...(device.groups || []).map((group) => `Group: ${group}`)].filter(Boolean);
+        if (meta.length) {
+          const details = document.createElement('div');
+          details.className = 'device-meta';
+          details.textContent = meta.join(' · ');
+          card.append(details);
+        }
+        const actions = document.createElement('div');
+        actions.className = 'device-actions';
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.dataset.action = 'edit';
+        edit.dataset.deviceId = device.node_uid || device.deviceId || '';
+        edit.textContent = 'Edit';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'delete-device';
+        remove.dataset.action = 'delete';
+        remove.dataset.deviceId = edit.dataset.deviceId;
+        remove.textContent = 'Delete';
+        actions.append(edit, remove);
+        card.append(actions);
+        deviceList.append(card);
+      }
+    }
+
+    async function loadDeviceLibrary() {
+      deviceLibraryCount.textContent = 'Loading…';
+      try {
+        const response = await fetch('/v1/registry', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error('unavailable');
+        renderDeviceLibrary(data.nodes);
+      } catch {
+        deviceLibraryCount.textContent = 'Unavailable';
+        deviceList.replaceChildren();
+        const error = document.createElement('p');
+        error.className = 'device-empty';
+        error.textContent = 'Saved devices could not be loaded right now.';
+        deviceList.append(error);
+      }
+    }
+
+    function updateTbAuthFields() {
+      const jwt = tbAuthMode.value === 'jwt';
+      tbApiKeyRow.hidden = jwt;
+      tbUsernameRow.hidden = !jwt;
+      tbPasswordRow.hidden = !jwt;
+    }
+
+    function renderTbBindings(devices, bindings = {}) {
+      tbBindingsList.replaceChildren();
+      if (!devices.length) {
+        const empty = document.createElement('p');
+        empty.className = 'manage-copy';
+        empty.textContent = 'Import the ControlHub device definitions first; their identity bindings will appear here.';
+        tbBindingsList.append(empty);
+        return;
+      }
+      for (const device of devices) {
+        const id = device.deviceId || device.node_uid;
+        if (!id) continue;
+        const row = document.createElement('label');
+        row.className = 'binding-row';
+        const name = document.createElement('span');
+        name.className = 'binding-label';
+        name.textContent = device.nodeName || device.node_name || id;
+        const small = document.createElement('small');
+        small.textContent = id;
+        name.append(small);
+        const input = document.createElement('input');
+        input.className = 'tb-device-binding';
+        input.dataset.farmwizId = id;
+        input.type = 'text';
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        input.placeholder = 'Cloud device UUID';
+        input.value = bindings[id] || '';
+        input.setAttribute('aria-label', `Cloud device UUID for ${id}`);
+        row.append(name, input);
+        tbBindingsList.append(row);
+      }
+    }
+
+    async function loadCloudProfile() {
+      tbProfileState.textContent = 'Loading';
+      tbProfileState.classList.remove('ready');
+      try {
+        const [configResponse, devicesResponse] = await Promise.all([
+          fetch('/v1/config/thingsboard', { cache: 'no-store' }),
+          fetch('/v1/registry/device-definitions', { cache: 'no-store' }),
+        ]);
+        const config = await configResponse.json();
+        const deviceData = await devicesResponse.json();
+        if (!configResponse.ok) throw new Error(config.error || 'Could not load the FarmWiz Cloud profile.');
+        if (!devicesResponse.ok) throw new Error(deviceData.error || 'Could not load device IDs.');
+        const local = await readLocalSettings();
+        const localIsNewer = local.settings && (!config.configured
+          || !config.updated_at
+          || Date.parse(local.saved_at || '') > Date.parse(config.updated_at));
+        const saved = localIsNewer ? local.settings : {};
+        tbProfileName.value = saved.profile_name || config.profile_name || 'FarmWiz Cloud';
+        tbBaseUrl.value = saved.base_url || config.base_url || '';
+        tbAuthMode.value = saved.auth_mode || config.auth_mode || 'jwt';
+        tbApiKey.value = '';
+        tbUsername.value = '';
+        tbPassword.value = '';
+        updateTbAuthFields();
+        tbCredentialState.textContent = config.credentials_present
+          ? 'A credential is stored on the Pi. It is never returned to this page; leave the secret field blank to retain it.'
+          : 'No credential is stored yet. Enter one and save over HTTPS.';
+        tbProfileState.textContent = config.configured ? `Saved · ${config.profile_name || 'FarmWiz Cloud'}` : 'Not configured';
+        if (config.configured && config.credentials_present) tbProfileState.classList.add('ready');
+        const deviceBindings = localIsNewer
+          ? saved.device_bindings || {}
+          : config.device_bindings || {};
+        renderTbBindings(deviceData.devices || [], deviceBindings);
+        scheduleLocalSettingsSave();
+        const canSave = location.protocol === 'https:';
+        tbSaveButton.disabled = !canSave;
+        tbTestButton.disabled = !canSave || !config.configured || !config.credentials_present;
+        tbProfileMessage.textContent = local.error
+          ? local.error
+          : localIsNewer
+            ? 'Restored the latest settings from this browser. Credentials are not stored here.'
+            : canSave ? '' : 'Settings save in this browser. Open the dashboard through HTTPS to save or test credentials.';
+      } catch (error) {
+        tbProfileState.textContent = 'Unavailable';
+        tbProfileMessage.textContent = error.message;
+        tbSaveButton.disabled = true;
+        tbTestButton.disabled = true;
+      }
+    }
+
+    tbAuthMode.addEventListener('change', () => { updateTbAuthFields(); scheduleLocalSettingsSave(); });
+    tbProfileName.addEventListener('input', scheduleLocalSettingsSave);
+    tbBaseUrl.addEventListener('input', scheduleLocalSettingsSave);
+    tbBindingsList.addEventListener('input', scheduleLocalSettingsSave);
+    tbBindingsList.addEventListener('change', scheduleLocalSettingsSave);
+    document.querySelector('#open-cloud').addEventListener('click', () => {
+      menuNav.hidden = true;
+      cloudPanel.hidden = false;
+      cloudProfileSlot.append(tbProfilePanel);
+      tbProfilePanel.hidden = false;
+      tbProfilePanel.open = true;
+      loadCloudProfile();
+      tbProfileName.focus();
+    });
+    document.querySelector('#cloud-back').addEventListener('click', () => {
+      cloudPanel.hidden = true;
+      menuNav.hidden = false;
+      document.querySelector('#open-cloud').focus();
+    });
+    menuTrigger.addEventListener('click', () => {
+      const opening = appMenu.hidden;
+      appMenu.hidden = !opening;
+      menuTrigger.setAttribute('aria-expanded', String(opening));
+      if (opening) document.querySelector('#open-devices').focus();
+    });
+    document.querySelector('#open-devices').addEventListener('click', () => {
+      appMenu.hidden = true;
+      menuTrigger.setAttribute('aria-expanded', 'false');
+      deviceSetup.open = true;
+      deviceSetup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loadDeviceLibrary();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !appMenu.hidden) {
+        appMenu.hidden = true;
+        menuTrigger.setAttribute('aria-expanded', 'false');
+        menuTrigger.focus();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (!appMenu.hidden && !appMenu.contains(event.target) && !menuTrigger.contains(event.target)) {
+        appMenu.hidden = true;
+        menuTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+    tbProfilePanel.addEventListener('toggle', () => {
+      if (tbProfilePanel.open) loadCloudProfile();
+    });
+    tbSaveButton.addEventListener('click', async () => {
+      clearTimeout(localSettingsSaveTimer);
+      let browserSettingsStored = true;
+      try { await persistLocalSettings(); }
+      catch { browserSettingsStored = false; }
+      tbSaveButton.disabled = true;
+      tbTestButton.disabled = true;
+      tbProfileMessage.textContent = 'Saving the backend profile…';
+      const device_bindings = Object.fromEntries([...tbBindingsList.querySelectorAll('.tb-device-binding')]
+        .map((input) => [input.dataset.farmwizId, input.value.trim()]));
+      const body = {
+        profile_name: tbProfileName.value.trim(),
+        base_url: tbBaseUrl.value.trim(),
+        auth_mode: tbAuthMode.value,
+        device_bindings,
+        ...(tbAuthMode.value === 'jwt'
+          ? { username: tbUsername.value.trim(), password: tbPassword.value }
+          : { api_key: tbApiKey.value.trim() }),
+      };
+      try {
+        const response = await fetch('/v1/config/thingsboard', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Profile save failed (${response.status}).`);
+        tbApiKey.value = '';
+        tbPassword.value = '';
+        tbUsername.value = '';
+        tbProfileState.textContent = `Saved · ${data.profile_name}`;
+        tbProfileState.classList.add('ready');
+        tbCredentialState.textContent = 'Credential is stored on the Pi and was not returned by the server.';
+        tbProfileMessage.textContent = browserSettingsStored
+          ? 'Profile saved on the Pi and in this browser. Run the connection check before using it.'
+          : 'Profile saved on the Pi. Browser storage was unavailable.';
+        tbTestButton.disabled = false;
+      } catch (error) {
+        const saveError = error instanceof TypeError
+          ? 'Could not reach the Orchestrator. Open this dashboard through its HTTPS address and try again.'
+          : error.message;
+        tbProfileMessage.textContent = browserSettingsStored
+          ? `${saveError} Non-secret settings remain saved in this browser.`
+          : saveError;
+      } finally {
+        tbSaveButton.disabled = location.protocol !== 'https:';
+      }
+    });
+    tbTestButton.addEventListener('click', async () => {
+      tbTestButton.disabled = true;
+      tbProfileMessage.textContent = 'Checking cloud authentication…';
+      try {
+        const response = await fetch('/v1/config/thingsboard/test', { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Connection check failed (${response.status}).`);
+        tbProfileState.textContent = 'Connected · login accepted';
+        tbProfileState.classList.add('ready');
+        tbProfileMessage.textContent = `FarmWiz Cloud accepted the connection at ${data.base_url}. No device command was sent.`;
+      } catch (error) {
+        tbProfileState.textContent = 'Connection check failed';
+        tbProfileState.classList.remove('ready');
+        tbProfileMessage.textContent = error.message;
+      } finally { tbTestButton.disabled = location.protocol !== 'https:'; }
+    });
+
+    document.querySelector('.manage').addEventListener('toggle', (event) => {
+      if (event.currentTarget.open) loadDeviceLibrary();
+    });
+    deviceList.addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const deviceId = button.dataset.deviceId;
+      if (button.dataset.action === 'edit') {
+        try {
+          const response = await fetch('/v1/registry/device-definitions', { cache: 'no-store' });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Could not load device definitions.');
+          const definition = (data.devices || []).find((device) => device.deviceId === deviceId);
+          if (!definition) throw new Error('This device has no editable saved definition.');
+          editingDeviceId = deviceId;
+          deviceJson.value = JSON.stringify(definition, null, 2);
+          importDevicesButton.textContent = 'Save device changes';
+          deviceImportMessage.textContent = `Editing ${deviceId}. Save changes when ready.`;
+          deviceJson.focus();
+        } catch (error) { deviceImportMessage.textContent = error.message; }
+        return;
+      }
+      if (!window.confirm(`Delete ${deviceId} from the saved device list?`)) return;
+      button.disabled = true;
+      try {
+        const response = await fetch(`/v1/registry/devices/${encodeURIComponent(deviceId)}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Delete failed (${response.status}).`);
+        deviceImportMessage.textContent = `${deviceId} was deleted. Needle3 refresh is pending.`;
+        loadDeviceLibrary();
+        loadGardenStatus();
+      } catch (error) { deviceImportMessage.textContent = error.message; button.disabled = false; }
+    });
+    resetDeviceDataButton.addEventListener('click', async () => {
+      const confirmed = window.confirm('Clear all saved device definitions and all devices from this Orchestrator’s local list? A later cloud sync, MQTT discovery, or file import can add devices again.');
+      if (!confirmed) return;
+      resetDeviceDataButton.disabled = true;
+      deviceImportMessage.textContent = 'Clearing local device data…';
+      try {
+        const response = await fetch('/v1/registry/reset', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ confirm: 'RESET' }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Reset failed (${response.status}).`);
+        editingDeviceId = null;
+        deviceJson.value = '';
+        deviceJsonFile.value = '';
+        importDevicesButton.textContent = 'Save device list';
+        deviceImportMessage.textContent = `Reset complete. Cleared ${data.removed_registry_records} local record(s) and ${data.removed_definitions} saved definition(s).`;
+        loadDeviceLibrary();
+        loadGardenStatus();
+      } catch (error) {
+        deviceImportMessage.textContent = error instanceof TypeError
+          ? 'Could not reach Commander. Open this page from the Raspberry Pi address and try again.'
+          : error.message;
+      } finally { resetDeviceDataButton.disabled = false; }
+    });
+    importDevicesButton.addEventListener('click', async () => {
+      let definitions;
+      try { definitions = JSON.parse(deviceJson.value); }
+      catch { deviceImportMessage.textContent = 'This device list could not be read. Check it and try again.'; return; }
+      importDevicesButton.disabled = true;
+      const importUrl = new URL(editingDeviceId ? `/v1/registry/devices/${encodeURIComponent(editingDeviceId)}` : '/v1/registry/import-devices', window.location.href);
+      deviceImportMessage.textContent = `Sending this device list to Commander at ${importUrl.host}…`;
+      try {
+        const response = await fetch(importUrl, {
+          method: editingDeviceId ? 'PUT' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(definitions),
+        });
+        const responseText = await response.text();
+        let data;
+        try { data = JSON.parse(responseText); }
+        catch { throw new Error(`Commander at ${importUrl.host} returned an unreadable response (HTTP ${response.status}).`); }
+        if (!response.ok) throw new Error(`Commander at ${importUrl.host} rejected the upload (HTTP ${response.status}): ${data.error || 'The device list could not be saved.'}`);
+        const catalog = data.needle_tool_catalog;
+        deviceImportMessage.textContent = catalog?.generated
+          ? `${editingDeviceId ? 'Updated device' : `Saved ${data.imported} device(s)`} and checked ${catalog.tool_count} tools. The live Needle3 catalog is not reloaded automatically.`
+          : `Saved ${data.imported} device(s): ${(data.device_ids || []).join(', ')}.`;
+        editingDeviceId = null;
+        importDevicesButton.textContent = 'Save device list';
+        loadDeviceLibrary();
+        loadGardenStatus();
+      } catch (error) {
+        deviceImportMessage.textContent = error instanceof TypeError
+          ? `Could not reach Commander at ${importUrl.host}. Open this page from the Raspberry Pi address and try again.`
+          : error.message;
+      }
+      finally { importDevicesButton.disabled = false; }
+    });
+
+    async function loadGardenStatus() {
+      try {
+        const response = await fetch('/health', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error('unavailable');
+        const count = Number(data.registry_count || 0);
+        connection.classList.toggle('ready', count > 0);
+        connectionLabel.textContent = count ? `${count} ${count === 1 ? 'device' : 'devices'} ready` : 'Add your devices';
+      } catch {
+        connection.classList.remove('ready');
+        connectionLabel.textContent = 'Garden unavailable';
+      }
+    }
+    loadGardenStatus();
+  </script>
+</body>
+</html>

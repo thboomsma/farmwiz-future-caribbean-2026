@@ -7,7 +7,7 @@ Python 3.10+ and a virtual environment. ThingsBoard credentials are required onl
 ## Install
 
 ```powershell
-cd phase-2-agentic-ai
+cd cloud-ai
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt

@@ -8,7 +8,7 @@ FarmWiz is a smart farming platform being developed in Suriname that combines Io
 
 ## Future Caribbean Buildathon 2026
 
-FarmWiz entered Future Caribbean with an existing IoT and automation foundation. During the Buildathon, the team focused on adding an isolated Agentic AI/intelligence layer on top of that foundation. This repository makes that distinction explicit: Phase 1 is documented for later source upload, while Phase 2 contains the completed Buildathon AI application.
+FarmWiz entered Future Caribbean with an existing IoT and automation foundation. During the Buildathon, the team focused on adding an isolated Cloud AI/Agentic AI layer on top of that foundation. This repository makes that distinction explicit: Phase 1 is documented separately, while the Cloud AI and Edge AI folders contain the Buildathon software layers.
 
 ## FarmWiz Development Architecture
 
@@ -18,13 +18,17 @@ FarmWiz's pre-existing foundation covers farm sensing, ThingsBoard monitoring, a
 
 [View Phase 1 IoT Foundation](./phase-1-iot/)
 
-### Phase 2 — Agentic AI | Future Caribbean 2026
+### Phase 2 — Cloud AI / Agentic AI | Future Caribbean 2026
 
 The Buildathon addition is an isolated FastAPI dashboard and AI service that moves from **MONITOR + AUTOMATE** toward:
 
 **SENSE → DETECT → INVESTIGATE → REASON → RECOMMEND → ACT**
 
-[View Phase 2 Agentic AI](./phase-2-agentic-ai/)
+[View Phase 2 Cloud AI](./cloud-ai/)
+
+The Cloud AI layer is complemented by the local Edge AI / Orchestrator service, which provides the bounded local integration surface for FarmWiz devices and future edge execution.
+
+[View Edge AI / Orchestrator](./edge-ai/)
 
 ## The Problem
 
@@ -70,7 +74,7 @@ The adapter supports Google Gemini (`gemini-2.5-flash`), OpenAI (`gpt-5-mini`), 
 
 ## Setup
 
-See [docs/SETUP.md](./docs/SETUP.md). The application has its own dependency file and runs from `phase-2-agentic-ai/`. Copy the root `.env.example` to a private `.env` only for local use.
+See [docs/SETUP.md](./docs/SETUP.md). The Cloud AI application has its own dependency file and runs from `cloud-ai/`. The Edge AI service has its own Node.js package and setup guide. Copy the root `.env.example` to a private `.env` only for local use.
 
 ## Team
 

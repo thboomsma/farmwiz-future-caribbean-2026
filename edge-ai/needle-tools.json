@@ -1,0 +1,68 @@
+[
+  {
+    "name": "get_hub_status",
+    "description": "Read the current status of the named FarmWiz Control Hub without changing any device state.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "hub": {"type":"string", "description":"Exact hub ID from the current saved device list"}
+      },
+      "required": ["hub"]
+    }
+  },
+  {
+    "name": "get_sensor_state",
+    "description": "Read sensor values from a named FarmWiz ESP32 node without changing any device state.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "node": {"type":"string", "description":"The exact ESP32 node name"}
+      },
+      "required": ["node"]
+    }
+  },
+  {
+    "name": "list_schedules",
+    "description": "List schedules currently stored on the named FarmWiz Control Hub without changing them.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "hub": {"type":"string", "description":"Exact hub ID from the current saved device list"}
+      },
+      "required": ["hub"]
+    }
+  },
+  {
+    "name": "set_relay",
+    "description": "Turn one named FarmWiz relay on or off. Relay must be 1, 2, 3, or 4. An optional duration in seconds turns it off after the duration. This changes physical device state and must be confirmed by the Orchestrator.",
+    "triggers": ["\\b(turn|switch|power)\\b[\\s\\S]*\\b(relay|pump|light|valve)\\b"],
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "hub": {"type":"string", "description":"Exact hub ID from the current saved device list"},
+        "relay": {"type":"integer", "minimum":1, "maximum":4, "description":"Relay number 1 through 4"},
+        "state": {"type":"string", "enum":["on","off"], "description":"Requested relay state"},
+        "duration_seconds": {"type":"integer", "minimum":1, "maximum":1800, "description":"Optional automatic shutoff duration in seconds"}
+      },
+      "required": ["hub","relay","state"]
+    }
+  },
+  {
+    "name": "set_schedule",
+    "description": "Create a recurring relay schedule on a named FarmWiz Control Hub. Use a start time such as 06:30, an interval in minutes, and an on duration in minutes. This changes physical device scheduling and must be confirmed by the Orchestrator.",
+    "triggers": ["\\b(schedule|every hour|every [0-9]+ minutes|watering)\\b"],
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "hub": {"type":"string", "description":"Exact hub ID from the current saved device list"},
+        "target": {"type":"string", "description":"Named plant group or node, for example tomatoes"},
+        "relay": {"type":"integer", "minimum":1, "maximum":4, "description":"Relay number 1 through 4"},
+        "start": {"type":"string", "description":"24-hour local start time, for example 06:30"},
+        "interval_minutes": {"type":"integer", "minimum":1, "maximum":1440, "description":"Repeat interval in minutes"},
+        "duration_minutes": {"type":"integer", "minimum":1, "maximum":1440, "description":"How many minutes the relay stays on"},
+        "days": {"type":"array", "items":{"type":"string","enum":["mon","tue","wed","thu","fri","sat","sun"]}, "description":"Optional days of week"}
+      },
+      "required": ["hub","target","relay","start","interval_minutes","duration_minutes"]
+    }
+  }
+]

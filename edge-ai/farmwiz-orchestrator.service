@@ -1,0 +1,24 @@
+[Unit]
+Description=FarmWiz local Orchestrator gateway
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/farmwiz-orchestrator/app
+EnvironmentFile=/etc/farmwiz-orchestrator/orchestrator.env
+ExecStart=/home/pi/.nvm/versions/node/v22.23.2/bin/node /opt/farmwiz-orchestrator/app/orchestrator.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/etc/farmwiz-orchestrator
+ReadWritePaths=/opt/farmwiz-orchestrator/var
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,502 @@
+{
+    "schema":  "farmwiz-device-definitions.v1",
+    "capabilityProfile":  "ControlHub",
+    "devices":  [
+                    {
+                        "deviceId":  "ControlHub_01",
+                        "nodeName":  "Control Hub 01",
+                        "hubId":  "ControlHub_01",
+                        "aliases":  [
+                                        "ControlHub_01",
+                                        "Control Hub 01"
+                                    ],
+                        "groups":  [
+
+                                   ],
+                        "capabilities":  {
+                                             "capabilityType":  "device-capabilities",
+                                             "schemaVersion":  "1.1",
+                                             "generatedBy":  "tools/generate-capabilities.mjs",
+                                             "generatedFrom":  "source/source.ino",
+                                             "generatedAt":  "2026-09-25T18:11:30.628Z",
+                                             "firmware":  "2026.09.25.02",
+                                             "role":  "FarmWiz control hub",
+                                             "deviceType":  "ControlHub",
+                                             "mqttRoot":  "",
+                                             "mqttClientId":  "ControlHub_01",
+                                             "mqttUsernameRequired":  true,
+                                             "mqttRpcTopic":  "v1/devices/me/rpc/request/+",
+                                             "mqttTelemetryTopic":  "v1/devices/me/telemetry",
+                                             "mqttRpcResponseTopic":  "v1/devices/me/rpc/response/\u003crequestId\u003e",
+                                             "mqttTools":  [
+                                                               "getCapabilities",
+                                                               "setCron",
+                                                               "getCron",
+                                                               "setPump",
+                                                               "setLight",
+                                                               "setAirPump",
+                                                               "setWaterValve",
+                                                               "setMirror",
+                                                               "setIrrigationPump",
+                                                               "setRelay"
+                                                           ],
+                                             "mqttRpcMethods":  [
+                                                                    {
+                                                                        "name":  "getCapabilities",
+                                                                        "params":  {
+
+                                                                                   },
+                                                                        "returns":  "generated capabilities manifest"
+                                                                    },
+                                                                    {
+                                                                        "name":  "setCron",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4",
+                                                                                       "enabled":  "boolean",
+                                                                                       "hasSecondsPrecision":  "boolean",
+                                                                                       "cronOn":  "six-field CRON",
+                                                                                       "cronOff":  "six-field CRON"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "getCron",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4 or all"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setLight",
+                                                                        "params":  {
+                                                                                       "value":  "JSON Boolean (true=ON, false=OFF)"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setAirPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setWaterValve",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setMirror",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setIrrigationPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setRelay",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4",
+                                                                                       "state":  "boolean"
+                                                                                   }
+                                                                    }
+                                                                ],
+                                             "httpTools":  [
+                                                               {
+                                                                   "name":  "list_files",
+                                                                   "method":  "GET",
+                                                                   "path":  "/list"
+                                                               },
+                                                               {
+                                                                   "name":  "read_root",
+                                                                   "method":  "GET",
+                                                                   "path":  "/"
+                                                               },
+                                                               {
+                                                                   "name":  "read_data",
+                                                                   "method":  "GET",
+                                                                   "path":  "/data"
+                                                               },
+                                                               {
+                                                                   "name":  "read_capabilities",
+                                                                   "method":  "GET",
+                                                                   "path":  "/capabilities"
+                                                               },
+                                                               {
+                                                                   "name":  "read_remote_nodes",
+                                                                   "method":  "GET",
+                                                                   "path":  "/api/nodes"
+                                                               },
+                                                               {
+                                                                   "name":  "toggle_relay",
+                                                                   "method":  "GET",
+                                                                   "path":  "/toggle"
+                                                               },
+                                                               {
+                                                                   "name":  "legacy_set_schedule",
+                                                                   "method":  "POST",
+                                                                   "path":  "/setSchedule"
+                                                               },
+                                                               {
+                                                                   "name":  "set_cron_profile",
+                                                                   "method":  "POST",
+                                                                   "path":  "/api/schedules"
+                                                               },
+                                                               {
+                                                                   "name":  "read_cron_profiles",
+                                                                   "method":  "GET",
+                                                                   "path":  "/getSchedules"
+                                                               },
+                                                               {
+                                                                   "name":  "delete_legacy_schedule",
+                                                                   "method":  "POST",
+                                                                   "path":  "/deleteSchedule"
+                                                               },
+                                                               {
+                                                                   "name":  "force_schedule_check",
+                                                                   "method":  "GET",
+                                                                   "path":  "/forceCheck"
+                                                               },
+                                                               {
+                                                                   "name":  "sync_time",
+                                                                   "method":  "GET",
+                                                                   "path":  "/syncTime"
+                                                               },
+                                                               {
+                                                                   "name":  "reboot",
+                                                                   "method":  "GET",
+                                                                   "path":  "/reboot"
+                                                               },
+                                                               {
+                                                                   "name":  "read_ota_status",
+                                                                   "method":  "GET",
+                                                                   "path":  "/ota_status"
+                                                               }
+                                                           ],
+                                             "relayOutputs":  [
+                                                                  {
+                                                                      "relay":  1,
+                                                                      "name":  "Relay 1"
+                                                                  },
+                                                                  {
+                                                                      "relay":  2,
+                                                                      "name":  "Relay 2"
+                                                                  },
+                                                                  {
+                                                                      "relay":  3,
+                                                                      "name":  "Relay 3"
+                                                                  },
+                                                                  {
+                                                                      "relay":  4,
+                                                                      "name":  "Relay 4"
+                                                                  }
+                                                              ],
+                                             "semanticOperations":  {
+                                                                        "lights":  {
+                                                                                       "intent":  "control_lights",
+                                                                                       "rpcMethod":  "setLight",
+                                                                                       "targetScope":  "device",
+                                                                                       "relaySelection":  "firmware-internal",
+                                                                                       "rpcParameter":  "value",
+                                                                                       "valueEncoding":  "JSON boolean",
+                                                                                       "stateValues":  {
+                                                                                                           "on":  true,
+                                                                                                           "off":  false
+                                                                                                       }
+                                                                                   }
+                                                                    },
+                                             "runtimeDiscovery":  {
+                                                                      "data":  "/data",
+                                                                      "capabilities":  "/capabilities",
+                                                                      "cronProfiles":  "/getSchedules",
+                                                                      "note":  "Capabilities are generated from source; current relay and CRON state is read from the runtime endpoints."
+                                                                  },
+                                             "sourceSignals":  {
+                                                                   "mqttMethods":  [
+                                                                                       "getCapabilities",
+                                                                                       "setCron",
+                                                                                       "getCron",
+                                                                                       "setPump",
+                                                                                       "setLight",
+                                                                                       "setAirPump",
+                                                                                       "setWaterValve",
+                                                                                       "setMirror",
+                                                                                       "setIrrigationPump",
+                                                                                       "setRelay"
+                                                                                   ],
+                                                                   "httpPaths":  [
+                                                                                     "/list",
+                                                                                     "/",
+                                                                                     "/data",
+                                                                                     "/capabilities",
+                                                                                     "/api/nodes",
+                                                                                     "/toggle",
+                                                                                     "/setSchedule",
+                                                                                     "/api/schedules",
+                                                                                     "/getSchedules",
+                                                                                     "/deleteSchedule",
+                                                                                     "/forceCheck",
+                                                                                     "/syncTime",
+                                                                                     "/reboot",
+                                                                                     "/ota_status"
+                                                                                 ]
+                                                               }
+                                         }
+                    },
+                    {
+                        "deviceId":  "ControlHub_02",
+                        "nodeName":  "Control Hub 02",
+                        "hubId":  "ControlHub_02",
+                        "aliases":  [
+                                        "ControlHub_02",
+                                        "Control Hub 02"
+                                    ],
+                        "groups":  [
+
+                                   ],
+                        "capabilities":  {
+                                             "capabilityType":  "device-capabilities",
+                                             "schemaVersion":  "1.1",
+                                             "generatedBy":  "tools/generate-capabilities.mjs",
+                                             "generatedFrom":  "source/source.ino",
+                                             "generatedAt":  "2026-09-25T18:11:30.628Z",
+                                             "firmware":  "2026.09.25.02",
+                                             "role":  "FarmWiz control hub",
+                                             "deviceType":  "ControlHub",
+                                             "mqttRoot":  "",
+                                             "mqttClientId":  "ControlHub_02",
+                                             "mqttUsernameRequired":  true,
+                                             "mqttRpcTopic":  "v1/devices/me/rpc/request/+",
+                                             "mqttTelemetryTopic":  "v1/devices/me/telemetry",
+                                             "mqttRpcResponseTopic":  "v1/devices/me/rpc/response/\u003crequestId\u003e",
+                                             "mqttTools":  [
+                                                               "getCapabilities",
+                                                               "setCron",
+                                                               "getCron",
+                                                               "setPump",
+                                                               "setLight",
+                                                               "setAirPump",
+                                                               "setWaterValve",
+                                                               "setMirror",
+                                                               "setIrrigationPump",
+                                                               "setRelay"
+                                                           ],
+                                             "mqttRpcMethods":  [
+                                                                    {
+                                                                        "name":  "getCapabilities",
+                                                                        "params":  {
+
+                                                                                   },
+                                                                        "returns":  "generated capabilities manifest"
+                                                                    },
+                                                                    {
+                                                                        "name":  "setCron",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4",
+                                                                                       "enabled":  "boolean",
+                                                                                       "hasSecondsPrecision":  "boolean",
+                                                                                       "cronOn":  "six-field CRON",
+                                                                                       "cronOff":  "six-field CRON"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "getCron",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4 or all"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setLight",
+                                                                        "params":  {
+                                                                                       "value":  "JSON Boolean (true=ON, false=OFF)"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setAirPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setWaterValve",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setMirror",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setIrrigationPump",
+                                                                        "params":  {
+                                                                                       "value":  "method-specific"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "setRelay",
+                                                                        "params":  {
+                                                                                       "relay":  "integer 1-4",
+                                                                                       "state":  "boolean"
+                                                                                   }
+                                                                    }
+                                                                ],
+                                             "httpTools":  [
+                                                               {
+                                                                   "name":  "list_files",
+                                                                   "method":  "GET",
+                                                                   "path":  "/list"
+                                                               },
+                                                               {
+                                                                   "name":  "read_root",
+                                                                   "method":  "GET",
+                                                                   "path":  "/"
+                                                               },
+                                                               {
+                                                                   "name":  "read_data",
+                                                                   "method":  "GET",
+                                                                   "path":  "/data"
+                                                               },
+                                                               {
+                                                                   "name":  "read_capabilities",
+                                                                   "method":  "GET",
+                                                                   "path":  "/capabilities"
+                                                               },
+                                                               {
+                                                                   "name":  "read_remote_nodes",
+                                                                   "method":  "GET",
+                                                                   "path":  "/api/nodes"
+                                                               },
+                                                               {
+                                                                   "name":  "toggle_relay",
+                                                                   "method":  "GET",
+                                                                   "path":  "/toggle"
+                                                               },
+                                                               {
+                                                                   "name":  "legacy_set_schedule",
+                                                                   "method":  "POST",
+                                                                   "path":  "/setSchedule"
+                                                               },
+                                                               {
+                                                                   "name":  "set_cron_profile",
+                                                                   "method":  "POST",
+                                                                   "path":  "/api/schedules"
+                                                               },
+                                                               {
+                                                                   "name":  "read_cron_profiles",
+                                                                   "method":  "GET",
+                                                                   "path":  "/getSchedules"
+                                                               },
+                                                               {
+                                                                   "name":  "delete_legacy_schedule",
+                                                                   "method":  "POST",
+                                                                   "path":  "/deleteSchedule"
+                                                               },
+                                                               {
+                                                                   "name":  "force_schedule_check",
+                                                                   "method":  "GET",
+                                                                   "path":  "/forceCheck"
+                                                               },
+                                                               {
+                                                                   "name":  "sync_time",
+                                                                   "method":  "GET",
+                                                                   "path":  "/syncTime"
+                                                               },
+                                                               {
+                                                                   "name":  "reboot",
+                                                                   "method":  "GET",
+                                                                   "path":  "/reboot"
+                                                               },
+                                                               {
+                                                                   "name":  "read_ota_status",
+                                                                   "method":  "GET",
+                                                                   "path":  "/ota_status"
+                                                               }
+                                                           ],
+                                             "relayOutputs":  [
+                                                                  {
+                                                                      "relay":  1,
+                                                                      "name":  "Relay 1"
+                                                                  },
+                                                                  {
+                                                                      "relay":  2,
+                                                                      "name":  "Relay 2"
+                                                                  },
+                                                                  {
+                                                                      "relay":  3,
+                                                                      "name":  "Relay 3"
+                                                                  },
+                                                                  {
+                                                                      "relay":  4,
+                                                                      "name":  "Relay 4"
+                                                                  }
+                                                              ],
+                                             "semanticOperations":  {
+                                                                        "lights":  {
+                                                                                       "intent":  "control_lights",
+                                                                                       "rpcMethod":  "setLight",
+                                                                                       "targetScope":  "device",
+                                                                                       "relaySelection":  "firmware-internal",
+                                                                                       "rpcParameter":  "value",
+                                                                                       "valueEncoding":  "JSON boolean",
+                                                                                       "stateValues":  {
+                                                                                                           "on":  true,
+                                                                                                           "off":  false
+                                                                                                       }
+                                                                                   }
+                                                                    },
+                                             "runtimeDiscovery":  {
+                                                                      "data":  "/data",
+                                                                      "capabilities":  "/capabilities",
+                                                                      "cronProfiles":  "/getSchedules",
+                                                                      "note":  "Capabilities are generated from source; current relay and CRON state is read from the runtime endpoints."
+                                                                  },
+                                             "sourceSignals":  {
+                                                                   "mqttMethods":  [
+                                                                                       "getCapabilities",
+                                                                                       "setCron",
+                                                                                       "getCron",
+                                                                                       "setPump",
+                                                                                       "setLight",
+                                                                                       "setAirPump",
+                                                                                       "setWaterValve",
+                                                                                       "setMirror",
+                                                                                       "setIrrigationPump",
+                                                                                       "setRelay"
+                                                                                   ],
+                                                                   "httpPaths":  [
+                                                                                     "/list",
+                                                                                     "/",
+                                                                                     "/data",
+                                                                                     "/capabilities",
+                                                                                     "/api/nodes",
+                                                                                     "/toggle",
+                                                                                     "/setSchedule",
+                                                                                     "/api/schedules",
+                                                                                     "/getSchedules",
+                                                                                     "/deleteSchedule",
+                                                                                     "/forceCheck",
+                                                                                     "/syncTime",
+                                                                                     "/reboot",
+                                                                                     "/ota_status"
+                                                                                 ]
+                                                               }
+                                         }
+                    }
+                ]
+}

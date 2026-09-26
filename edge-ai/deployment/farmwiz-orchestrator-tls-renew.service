@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew FarmWiz Orchestrator LAN TLS certificate when needed
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/farmwiz-orchestrator-renew-lan-tls

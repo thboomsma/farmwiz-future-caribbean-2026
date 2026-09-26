@@ -1,0 +1,11 @@
+[Unit]
+Description=Check FarmWiz Orchestrator LAN TLS certificate weekly
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+RandomizedDelaySec=1h
+Unit=farmwiz-orchestrator-tls-renew.service
+
+[Install]
+WantedBy=timers.target
