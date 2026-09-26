@@ -1,0 +1,184 @@
+{
+  "capabilityType": "device-capabilities",
+  "schemaVersion": "1.1",
+  "generatedBy": "tools/generate-capabilities.mjs",
+  "generatedFrom": "source/source.ino",
+  "generatedAt": "2026-09-25T18:11:30.628Z",
+  "device": {
+    "deviceId": "ControlHub_02",
+    "firmwareVersion": "2026.09.25.02",
+    "role": "FarmWiz control hub"
+  },
+  "mqtt": {
+    "broker": "168.195.218.199",
+    "port": 1883,
+    "root": "",
+    "usernameRequired": true,
+    "clientId": "ControlHub_02",
+    "topics": {
+      "telemetry": "v1/devices/me/telemetry",
+      "rpcRequest": "v1/devices/me/rpc/request/+",
+      "rpcResponse": "v1/devices/me/rpc/response/<requestId>"
+    },
+    "rpcMethods": [
+      {
+        "name": "getCapabilities",
+        "params": {},
+        "returns": "generated capabilities manifest"
+      },
+      {
+        "name": "setCron",
+        "params": {
+          "relay": "integer 1-4",
+          "enabled": "boolean",
+          "hasSecondsPrecision": "boolean",
+          "cronOn": "six-field CRON",
+          "cronOff": "six-field CRON"
+        }
+      },
+      {
+        "name": "getCron",
+        "params": {
+          "relay": "integer 1-4 or all"
+        }
+      },
+      {
+        "name": "setPump",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setLight",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setAirPump",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setWaterValve",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setMirror",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setIrrigationPump",
+        "params": {
+          "value": "method-specific"
+        }
+      },
+      {
+        "name": "setRelay",
+        "params": {
+          "relay": "integer 1-4",
+          "state": "boolean"
+        }
+      }
+    ]
+  },
+  "httpEndpoints": [
+    {
+      "path": "/list",
+      "method": "GET"
+    },
+    {
+      "path": "/",
+      "method": "GET"
+    },
+    {
+      "path": "/data",
+      "method": "GET"
+    },
+    {
+      "path": "/capabilities",
+      "method": "GET"
+    },
+    {
+      "path": "/api/nodes",
+      "method": "GET"
+    },
+    {
+      "path": "/toggle",
+      "method": "GET"
+    },
+    {
+      "path": "/setSchedule",
+      "method": "POST"
+    },
+    {
+      "path": "/api/schedules",
+      "method": "POST"
+    },
+    {
+      "path": "/getSchedules",
+      "method": "GET"
+    },
+    {
+      "path": "/deleteSchedule",
+      "method": "POST"
+    },
+    {
+      "path": "/forceCheck",
+      "method": "GET"
+    },
+    {
+      "path": "/syncTime",
+      "method": "GET"
+    },
+    {
+      "path": "/reboot",
+      "method": "GET"
+    },
+    {
+      "path": "/ota_status",
+      "method": "GET"
+    }
+  ],
+  "runtimeDiscovery": {
+    "data": "/data",
+    "capabilities": "/capabilities",
+    "cronProfiles": "/getSchedules",
+    "note": "Capabilities are generated from source; current relay and CRON state is read from the runtime endpoints."
+  },
+  "sourceSignals": {
+    "mqttMethods": [
+      "getCapabilities",
+      "setCron",
+      "getCron",
+      "setPump",
+      "setLight",
+      "setAirPump",
+      "setWaterValve",
+      "setMirror",
+      "setIrrigationPump",
+      "setRelay"
+    ],
+    "httpPaths": [
+      "/list",
+      "/",
+      "/data",
+      "/capabilities",
+      "/api/nodes",
+      "/toggle",
+      "/setSchedule",
+      "/api/schedules",
+      "/getSchedules",
+      "/deleteSchedule",
+      "/forceCheck",
+      "/syncTime",
+      "/reboot",
+      "/ota_status"
+    ]
+  }
+}
