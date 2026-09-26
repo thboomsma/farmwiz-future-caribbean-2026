@@ -1,0 +1,17 @@
+{
+  "crop": "tomato",
+  "display_name": "Tomato",
+  "status": "source-backed starter profile",
+  "soil_ph": {"min": 5.8, "max": 6.6, "unit": "pH"},
+  "growing_temperature": {"min": 15.6, "max": 32.2, "unit": "°C", "note": "60–90°F growing-season range; extremes can slow growth, pollination, and maturation."},
+  "requirements": [
+    "Well-drained soil and consistent moisture are important.",
+    "Avoid large moisture swings during fruit growth.",
+    "Use soil-test results before making fertilizer decisions.",
+    "Flowering and fruit set are sensitive to heat and cool nights."
+  ],
+  "sources": [
+    {"title": "Penn State Extension — Tomato Production", "url": "https://extension.psu.edu/tomato-production"},
+    {"title": "Penn State Extension — Tomatoes: From Seedlings to Fruit", "url": "https://extension.psu.edu/tomatoes-from-seedlings-to-fruit"}
+  ]
+}

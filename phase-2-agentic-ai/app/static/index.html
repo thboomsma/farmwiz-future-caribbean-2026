@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f7ed" />
+    <title>FarmWiz AI · Field intelligence</title>
+    <link rel="stylesheet" href="static/style.css?v=48" />
+    <script>window.fetch = ((nativeFetch) => (input, ...args) => { if (typeof input === 'string' && input.startsWith('/api/')) { const prefix = window.location.pathname.startsWith('/ai') ? '/ai' : ''; input = prefix + input; } return nativeFetch(input, ...args); })(window.fetch.bind(window));</script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="FarmWiz AI home">
+          <span class="brand-mark" aria-hidden="true">✳</span>
+          <span>FarmWiz <em>AI</em></span>
+        </a>
+        <div class="system-chip"><span class="pulse"></span><span id="service-state">Booting local shell</span></div>
+      </header>
+
+      <main id="main">
+        <section class="hero" aria-labelledby="page-title">
+          <div class="eyebrow">FARMWIZ FIELD DESK / AI CO-PILOT</div>
+          <h1 id="page-title">Know what matters<br /><span>before you walk the field.</span></h1>
+          <p class="lede">FarmWiz AI will turn real farm telemetry into calm, explainable decisions — while the existing control system stays protected.</p>
+          <div class="hero-note"><span class="note-dot"></span><strong>Read-only discovery</strong><span>is the current mission</span></div>
+        </section>
+
+        <section class="metrics" aria-label="Farm system status">
+          <article class="metric-card feature-card">
+            <div class="card-kicker">FARM HEALTH</div>
+            <div class="feature-value" id="health-value">LIVE<br /><span>READINGS</span></div>
+            <p id="health-copy">Read-only signals are arriving from the farm edge.</p>
+          </article>
+          <article class="metric-card">
+            <div class="card-kicker">TELEMETRY</div>
+            <div class="metric-value" id="reading-count">—</div>
+            <p id="reading-copy">Waiting for read-only sensor inventory.</p>
+          </article>
+          <article class="metric-card">
+            <div class="card-kicker">AI PROVIDER</div>
+            <div class="metric-value" id="ai-state">Not set</div>
+            <p>Provider abstraction is ready; no model calls happen yet.</p>
+          </article>
+        </section>
+
+        <section class="telemetry-section" aria-labelledby="telemetry-title">
+          <div class="section-heading"><div><div class="card-kicker">SELECTED DEVICE READINGS</div><h2 id="telemetry-title">What this device is saying</h2></div><div class="history-slider"><label for="history-days">HISTORY <output id="history-days-value">7 DAYS</output></label><input id="history-days" type="range" min="1" max="30" value="7" step="1" aria-label="History window in days" /></div><span class="tiny-label" id="telemetry-updated">SYNCING</span></div>
+          <div class="sensor-grid" id="sensor-grid" aria-live="polite"><div class="sensor-empty">Loading read-only telemetry…</div></div>
+          <div class="pulse-findings" id="pulse-findings" aria-live="polite"></div>
+        </section>
+
+        <section class="device-section" aria-labelledby="device-title">
+          <div class="section-heading"><div><div class="card-kicker">EQUIPMENT</div><h2 id="device-title">Choose a device to inspect</h2></div><span class="tiny-label">READ ONLY</span></div>
+          <div class="device-grid" id="device-grid" aria-live="polite"><div class="sensor-empty">Checking device states…</div></div>
+        </section>
+
+        <section class="insight-section" aria-labelledby="insight-title" hidden>
+          <div class="section-heading"><div><div class="card-kicker">EXPLAINABLE SIGNALS</div><h2 id="insight-title">What needs a closer look</h2></div><span class="tiny-label" id="insight-mode">RULES ONLY</span></div>
+          <div class="insight-list" id="insight-list" aria-live="polite"><div class="sensor-empty">Checking evidence-linked findings…</div></div>
+        </section>
+
+        <section class="history-section" aria-labelledby="history-title" hidden>
+          <div class="section-heading"><div><div class="card-kicker">RECENT HISTORY</div><h2 id="history-title">How the signal is moving</h2></div><span class="tiny-label" id="history-mode">7 DAYS / READ ONLY</span></div>
+          <div class="history-grid" id="history-grid" aria-live="polite"><div class="sensor-empty">Loading historical trends…</div></div>
+        </section>
+
+        <section class="profile-section" aria-labelledby="profile-title">
+          <div class="section-heading"><div><div class="card-kicker">FARM CONTEXT</div><h2 id="profile-title">Tell FarmWiz what you grow</h2></div><span class="tiny-label">LOCAL PROFILE</span></div>
+          <div class="profile-grid">
+            <label>Crop<input id="profile-crop-search" list="crop-options" placeholder="Search or enter a crop" autocomplete="off" /><datalist id="crop-options"><option value="Tomato"></option><option value="Pepper"></option><option value="Lettuce"></option><option value="Cucumber"></option><option value="Okra"></option></datalist><button type="button" id="add-crop">Add crop</button></label>
+            <label>Growth stage<select id="profile-stage"><option value="seedling">Seedling</option><option value="vegetative">Vegetative</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="harvest">Harvest</option></select></label>
+            <label class="profile-location">Farm location<input id="profile-location" placeholder="Search city or postal code" autocomplete="off" /><button type="button" id="profile-search">Search</button><div id="profile-results" class="profile-results" role="listbox"></div></label>
+          </div>
+          <p class="profile-note" id="profile-note">Choose a crop and location so future weather and crop advice can be specific. Nothing is sent to ThingsBoard.</p>
+        </section>
+
+        <div class="context-grid">
+        <section class="weather-section" aria-labelledby="weather-title">
+          <div class="section-heading"><div><div class="card-kicker">LOCAL WEATHER</div><h2 id="weather-title">Conditions around the farm</h2></div><span class="tiny-label" id="weather-source">LOCATION NEEDED</span></div>
+          <div class="weather-grid" id="weather-grid" aria-live="polite"><div class="sensor-empty">Choose a farm location to load current weather.</div></div>
+        </section>
+
+        </div>
+
+        <section class="crop-section" aria-labelledby="crop-title">
+          <div class="section-heading"><div><div class="card-kicker">CROP GUIDE</div><h2 id="crop-title">Requirements for this crop</h2></div><span class="tiny-label" id="crop-source">SELECT A CROP</span></div>
+          <div class="crop-selection" id="crop-selection" aria-live="polite"></div><div class="crop-guide" id="crop-guide"><div class="sensor-empty">Search for one or more crops to load requirements.</div></div>
+        </section>
+
+        <section class="agent-section" aria-labelledby="agent-title">
+          <div class="section-heading"><div><div class="card-kicker">FARMWIZ FIELD ADVISER</div><h2 id="agent-title">Ask the farm</h2></div><span class="tiny-label" id="agent-usage">AI READY</span></div>
+          <p class="agent-intro">Start with a question or choose a useful next check. FarmWiz uses the latest readings and explains what deserves your attention first.</p>
+          <div class="agent-prompts" aria-label="Suggested questions"><button type="button" data-question="What should I investigate first today?">What should I investigate first?</button><button type="button" data-question="Which readings look unusual, and why?">Which readings look unusual?</button><button type="button" data-question="Are any devices offline or stale?">Are any devices offline?</button></div>
+          <form class="agent-form" id="agent-form"><label for="agent-message">Ask one evidence-based question</label><div class="agent-input-row"><input id="agent-message" name="message" maxlength="2000" value="How is my farm doing?" /><button type="button" id="agent-listen" aria-label="Speak your question">🎙</button><select id="agent-provider" aria-label="AI provider"></select><button type="submit" id="agent-submit">Ask <span aria-hidden="true">→</span></button><button type="button" id="agent-speak" aria-label="Read the answer aloud">🔊</button></div><span id="agent-voice-status" class="tiny-label">TEXT + VOICE</span></form>
+          <article class="agent-answer" id="agent-answer" aria-live="polite"><span class="answer-label">LAST AI ANALYSIS</span><p>Ask a question and FarmWiz will combine live evidence, history, crop context, and weather.</p></article>
+          <form class="image-agent-form" id="image-agent-form"><label for="plant-image">Ask FarmWiz about a plant image</label><div class="image-agent-row"><input id="plant-image" type="file" accept="image/jpeg,image/png,image/webp" required /><input id="image-question" maxlength="500" value="What type of plant is this, and what might be wrong with it?" /><select id="image-provider" aria-label="Image AI provider"><option value="local_icm">Local ICM</option><option value="gemini">Gemini Vision</option></select><button type="submit" id="image-submit">Analyse image</button></div><span id="image-status" class="tiny-label">IMAGE ANALYSIS · NO HARDWARE ACTIONS</span></form>
+        </section>
+
+        <section class="actions-section" aria-labelledby="actions-title">
+          <div class="section-heading"><div><div class="card-kicker">FARMER VOICE</div><h2 id="actions-title">Speak with FarmWiz</h2></div><span class="tiny-label">TEXT ↔ SPEECH</span></div>
+          <p class="actions-intro">Say something or type it below. FarmWiz will show the text and read it back to you. Hardware control will be added later.</p>
+          <div class="voice-command" id="voice-command"><textarea id="voice-transcript" rows="3" placeholder="Your spoken words will appear here…"></textarea><div class="voice-controls"><button type="button" id="voice-listen">Start listening</button><button type="button" id="voice-speak">Speak text</button><span id="voice-status" class="tiny-label">READY</span></div></div>
+          <div class="voice-controls voice-command-tools"><button type="button" id="voice-convert">Convert to ThingsBoard JSON</button><button type="button" id="voice-clear">Clear</button><button type="button" id="voice-send" hidden>Approve &amp; send light test</button></div><pre id="voice-preview" class="voice-preview" aria-live="polite">No command converted yet.</pre>
+          <div class="voice-note">Text and speech only for now. No command is sent to equipment.</div>
+        </section>
+
+        <section class="lower-grid" aria-label="Build status">
+          <article class="panel timeline-panel">
+            <div class="panel-heading"><span class="card-kicker">BUILD PATH</span><span class="tiny-label">01 / 06</span></div>
+            <ol class="timeline">
+              <li class="complete"><span class="step">01</span><div><strong>Discover</strong><small>Inspect without changing</small></div><span class="state">DONE</span></li>
+              <li class="complete"><span class="step">02</span><div><strong>Stand alone</strong><small>FastAPI + dashboard shell</small></div><span class="state">DONE</span></li>
+              <li class="active"><span class="step">03</span><div><strong>Connect data</strong><small>ThingsBoard, read-only</small></div><span class="state">NOW</span></li>
+              <li><span class="step">04</span><div><strong>Interpret</strong><small>Rules, weather, AI tools</small></div><span class="state">NEXT</span></li>
+            </ol>
+          </article>
+          <article class="panel principle-panel">
+            <div class="panel-heading"><span class="card-kicker">OPERATING PRINCIPLE</span><span class="leaf" aria-hidden="true">↗</span></div>
+            <blockquote>“The cloud can think ahead.<br /><span>The switchbox still decides what moves.</span>”</blockquote>
+            <div class="principle-rule"><span>FARMER</span><i></i><span>AI</span><i></i><span>EDGE</span><i></i><span>CONTROL</span></div>
+            <p>Every proposed action remains visible, validated, and approval-gated before it can reach hardware.</p>
+          </article>
+        </section>
+
+        <section class="debug-section" aria-labelledby="debug-title">
+          <div class="section-heading"><div><div class="card-kicker">BUILDATHON DEBUG</div><h2 id="debug-title">What the system is allowed to do</h2></div><span class="tiny-label" id="debug-updated">CHECKING</span></div>
+          <div class="debug-grid" id="debug-grid" aria-live="polite"><div class="sensor-empty">Loading system diagnostics…</div></div>
+        </section>
+      </main>
+
+      <footer><span>FARMWIZ / FUTURE CARIBBEAN BUILDATHON 2026</span><span>LOCAL DEVELOPMENT SHELL · v0.1.0</span></footer>
+    </div>
+    <dialog class="history-dialog" id="history-dialog">
+      <div class="dialog-top"><div><span class="card-kicker">READING HISTORY</span><h2 id="dialog-title">Trend</h2></div><button type="button" id="dialog-close" aria-label="Close chart">×</button></div>
+      <div id="dialog-chart" class="dialog-chart"></div>
+      <p id="dialog-summary" class="dialog-summary"></p>
+    </dialog>
+    <script src="static/app.js?v=57" defer></script>
+  </body>
+</html>

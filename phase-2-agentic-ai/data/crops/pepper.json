@@ -1,0 +1,9 @@
+{
+  "crop": "pepper",
+  "display_name": "Pepper",
+  "status": "source-backed starter profile",
+  "soil_ph": {"min": 5.5, "max": 6.8, "unit": "pH"},
+  "growing_temperature": {"min": 18, "max": 30, "unit": "°C"},
+  "requirements": ["Well-drained soil and even moisture support flowering and fruit set.", "Avoid waterlogged roots and large swings between dry and saturated soil.", "Use soil-test results before making fertilizer decisions."],
+  "sources": [{"title": "University of Minnesota Extension — Growing peppers", "url": "https://extension.umn.edu/vegetables/growing-peppers"}]
+}

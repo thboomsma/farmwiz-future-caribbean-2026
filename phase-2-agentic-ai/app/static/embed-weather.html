@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FarmWiz Weather</title>
+  <style>
+    :root { color-scheme: light; --green:#1b5e20; --muted:#64748b; --line:#dbe5d5; --wash:#f6faf2; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; width:100%; min-width:0; background:#fff; }
+    body { font-family:Roboto,Arial,sans-serif; color:#1f2933; overflow-x:hidden; }
+    .panel { width:100%; min-height:100%; padding:16px; overflow:visible; }
+    .eyebrow { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.12em; }
+    .title { margin:3px 0 12px; color:var(--green); font-size:clamp(20px,2.4vw,28px); font-weight:700; line-height:1.15; }
+    .search { display:flex; width:100%; gap:8px; }
+    .search input { flex:1 1 auto; min-width:0; width:100%; padding:10px 11px; border:1px solid #cbd5e1; border-radius:7px; font:inherit; font-size:14px; }
+    .search button, .places button { border:0; border-radius:7px; padding:10px 14px; background:#2e7d32; color:#fff; font-weight:700; cursor:pointer; }
+    .search button { flex:0 0 auto; }
+    .places { display:grid; gap:5px; margin-top:7px; }
+    .places button { width:100%; text-align:left; background:#f1f8e9; color:var(--green); font-size:12px; }
+    .status { margin-top:10px; color:var(--muted); font-size:12px; line-height:1.4; }
+    .weather-content { display:grid; min-width:0; width:100%; gap:12px; margin-top:10px; }
+    .current-card { padding:12px; border:1px solid var(--line); border-radius:10px; background:linear-gradient(135deg,#fffef9,#f0f7e8); }
+    .current { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; }
+    .current strong { color:var(--green); font-size:clamp(30px,4vw,42px); line-height:1; }
+    .current span { font-weight:700; }
+    .meta { margin-top:7px; color:#475569; font-size:12px; line-height:1.5; }
+    .forecast-title { color:var(--green); font-size:14px; font-weight:700; }
+    .days { display:grid; width:100%; min-width:0; max-width:100%; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; overflow:hidden; }
+    .day { width:100%; min-width:0; max-width:100%; overflow-wrap:anywhere; padding:8px 5px; border:1px solid #e2e8f0; border-radius:7px; background:#f8fafc; text-align:center; font-size:11px; line-height:1.3; }
+    .day b { display:block; margin:3px 0; color:var(--green); font-size:18px; }
+    .empty { padding:14px; border:1px dashed #cbd5e1; border-radius:8px; color:var(--muted); font-size:13px; }
+    @media (max-width:700px) {
+      .panel { padding:13px; }
+      .search { flex-wrap:wrap; }
+      .search input, .search button { flex:1 1 100%; min-height:42px; }
+      /* Keep the four-day forecast compact inside ThingsBoard's mobile card.
+         A one-card-per-row forecast made the iframe much taller than its
+         mobile grid allocation and left a large visual gap before chat. */
+      .days { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; width:100%; max-width:100%; }
+      .weather-content, .days { width:100%; max-width:100%; }
+      .days .day { width:100%; max-width:100%; margin:0; padding:6px 4px; }
+      .day b { font-size:16px; }
+    }
+    @media (max-width:390px) {
+      .panel { padding:11px; }
+      .title { font-size:21px; }
+      .days { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <div class="eyebrow">FARMWIZ WEATHER</div>
+    <div class="title">Conditions around the farm</div>
+    <div class="search"><input id="q" placeholder="Search farm location" autocomplete="off"><button id="go" type="button">Search</button></div>
+    <div id="places" class="places" aria-live="polite"></div>
+    <div id="status" class="status" aria-live="polite">Choose a location to load weather.</div>
+    <section id="weather-content" class="weather-content" aria-live="polite"></section>
+  </main>
+  <script>
+    (function () {
+      const EMBED_ORIGIN = 'https://dash.farmwiz.net';
+      const q = document.getElementById('q');
+      const go = document.getElementById('go');
+      const places = document.getElementById('places');
+      const status = document.getElementById('status');
+      const content = document.getElementById('weather-content');
+      const postHeight = () => {
+        const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+        if (window.parent !== window) window.parent.postMessage({ type: 'farmwiz-weather-resize', height }, EMBED_ORIGIN);
+      };
+      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(postHeight) : null;
+      if (observer) observer.observe(document.documentElement);
+      window.addEventListener('load', postHeight);
+      window.addEventListener('resize', postHeight);
+      const describe = (code) => code === 0 ? 'Clear sky' : code < 4 ? 'Partly cloudy' : code < 60 ? 'Cloudy' : code < 83 ? 'Rain' : 'Storm risk';
+      const save = (profile) => { try { const old = JSON.parse(localStorage.getItem('farmwiz-farm-profile') || '{}'); localStorage.setItem('farmwiz-farm-profile', JSON.stringify({ ...old, ...profile })); } catch { /* storage is optional */ } };
+      function renderWeather(profile, data) {
+        const current = data.current || {};
+        const daily = data.daily || {};
+        const cards = (daily.time || []).slice(0, 4).map((day, i) => `<div class="day"><span>${day.slice(5)}</span><b>${Number((daily.temperature_2m_max || [])[i] || 0).toFixed(0)}°</b><span>${describe(Number((daily.weather_code || [])[i]))}</span></div>`).join('');
+        content.innerHTML = `<div class="current-card"><div class="current"><strong>${Number(current.temperature_2m || 0).toFixed(1)}°C</strong><span>${describe(Number(current.weather_code))}</span></div><div class="meta">Humidity ${current.relative_humidity_2m ?? '—'}% · Wind ${Number(current.wind_speed_10m || 0).toFixed(0)} km/h · Rain ${current.precipitation ?? 0} mm</div></div><div class="forecast-title">Forecast · ${profile.location_name || 'Selected farm'}</div><div class="days">${cards || '<div class="empty">Forecast unavailable.</div>'}</div>`;
+        postHeight();
+      }
+      async function loadWeather(profile) {
+        status.textContent = 'Loading weather data...'; content.innerHTML = '<div class="empty">Loading current conditions and forecast...</div>'; postHeight();
+        try { const response = await fetch('/ai/api/weather?latitude=' + encodeURIComponent(profile.latitude) + '&longitude=' + encodeURIComponent(profile.longitude), { headers: { Accept: 'application/json' } }); if (!response.ok) throw new Error(); renderWeather(profile, await response.json()); status.textContent = (profile.location_name || 'Selected farm') + ' · local conditions'; }
+        catch { status.textContent = 'Unable to retrieve weather information.'; content.innerHTML = '<div class="empty">Weather is temporarily unavailable. Try searching again.</div>'; postHeight(); }
+      }
+      async function findLocation() {
+        const query = q.value.trim(); if (!query) return; go.disabled = true; places.innerHTML = ''; status.textContent = 'Searching location...';
+        try { const response = await fetch('/ai/api/geocode?query=' + encodeURIComponent(query), { headers: { Accept: 'application/json' } }); if (!response.ok) throw new Error(); const data = await response.json(); const found = data.places || data.results || []; if (!found.length) { status.textContent = 'No matching locations found.'; postHeight(); return; }
+          found.slice(0, 5).forEach((place) => { const button = document.createElement('button'); button.type = 'button'; button.textContent = [place.name, place.admin1, place.country].filter(Boolean).join(', '); button.onclick = () => { const profile = { location_name: button.textContent, latitude: place.latitude, longitude: place.longitude, timezone: place.timezone }; q.value = profile.location_name; places.innerHTML = ''; save(profile); loadWeather(profile); }; places.appendChild(button); }); postHeight();
+        } catch { status.textContent = 'Location search unavailable.'; postHeight(); } finally { go.disabled = false; }
+      }
+      go.addEventListener('click', findLocation); q.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); findLocation(); } });
+      try {
+        const saved = JSON.parse(localStorage.getItem('farmwiz-farm-profile') || '{}');
+        const profile = saved.latitude && saved.longitude ? saved : { location_name: 'Paramaribo, Suriname', latitude: 5.86638, longitude: -55.16682, timezone: 'America/Paramaribo' };
+        q.value = profile.location_name || '';
+        loadWeather(profile);
+      } catch { status.textContent = 'Choose a location to load weather.'; postHeight(); }
+      postHeight();
+    }());
+  </script>
+</body>
+</html>

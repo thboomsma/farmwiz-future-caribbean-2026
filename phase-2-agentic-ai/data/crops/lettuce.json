@@ -1,0 +1,9 @@
+{
+  "crop": "lettuce",
+  "display_name": "Lettuce",
+  "status": "source-backed starter profile",
+  "soil_ph": {"min": 6.0, "max": 7.0, "unit": "pH"},
+  "growing_temperature": {"min": 7, "max": 24, "unit": "°C"},
+  "requirements": ["Keep soil consistently moist but well drained.", "Cool conditions help reduce bolting and bitter leaves.", "Use soil-test results before making fertilizer decisions."],
+  "sources": [{"title": "University of Minnesota Extension — Growing lettuce", "url": "https://extension.umn.edu/vegetables/growing-lettuce"}]
+}
