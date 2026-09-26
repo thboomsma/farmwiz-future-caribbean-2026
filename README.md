@@ -80,6 +80,10 @@ Suriname
 
 Live FarmWiz AI Demo: [https://dash.farmwiz.net/ai/](https://dash.farmwiz.net/ai/)
 
+Live FarmWiz IoT Dashboard: [Open the public dashboard](https://dash.farmwiz.net/dashboard/b9ad1d50-9764-11f1-af72-df465c69efc3?publicId=9371e520-97f6-11f1-a7b3-b57c7e9f5d10)
+
+Before sharing this link broadly, confirm that the public dashboard contains telemetry/status widgets only and no RPC, relay, schedule, or equipment-control widgets.
+
 The hosted demo has the private runtime configuration required for Gemini, the local ICM relay, and read-only ThingsBoard access. Those credentials are intentionally not included in this public repository. A local deployment can be configured with the variables documented in [docs/SETUP.md](./docs/SETUP.md).
 
 Future Caribbean Demo Video: [ADD FINAL VIDEO LINK]  
