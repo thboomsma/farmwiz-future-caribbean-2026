@@ -90,6 +90,7 @@ Project Documentation / Data Room: [ADD FINAL DRIVE LINK]
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Agentic Workflow](./docs/AGENTIC_WORKFLOW.md)
 - [Project Overview](./docs/PROJECT_OVERVIEW.md)
+- [Models, Data Sources, and Tools](./docs/MODELS_DATA_SOURCES.md)
 - [Buildathon Work](./docs/BUILDATHON_WORK.md)
 - [Setup](./docs/SETUP.md)
 - [Responsible AI](./docs/RESPONSIBLE_AI.md)
